@@ -1,0 +1,318 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+enum AccountType {
+  B2B
+  B2G
+  B2P
+  B2COM
+}
+
+enum BudgetClass {
+  RENDAH   @map("Rendah")
+  MENENGAH @map("Menengah")
+  TINGGI   @map("Tinggi")
+}
+
+enum PipelineStage {
+  BELUM_DIHUBUNGI  @map("Belum Dihubungi")
+  POTENSIAL        @map("Potensial")
+  TAHAP_BRIEFING   @map("Tahap Briefing")
+  MEETING          @map("Meeting")
+  NEGOSIASI        @map("Negosiasi")
+  KIRIM_PROPOSAL   @map("Kirim Proposal")
+  CLOSED_WON_DEAL  @map("Closed Won (Deal)")
+  NURTURING        @map("Nurturing")
+}
+
+enum ProspectOwner {
+  Daus
+}
+
+enum BriefStatus {
+  BELUM_BRIEF @map("Belum Brief")
+  ON_BRIEF    @map("On Brief")
+  BRIEF_SENT  @map("Brief Sent")
+  REVISI      @map("Revisi Brief")
+  DEAL_BRIEF  @map("Deal Brief")
+}
+
+enum ProductLine {
+  Community
+  Media
+  Program
+}
+
+enum ResearchJobStatus {
+  queued
+  running
+  done
+  failed
+}
+
+enum ResearchProvider {
+  mock
+  google_places
+  manual
+}
+
+enum FindingSource {
+  GOOGLE_PLACES @map("Google Places")
+  MANUAL        @map("Manual")
+  MOCK_RESEARCH @map("Mock Research")
+}
+
+enum FindingStatus {
+  pending
+  approved
+  rejected
+  synced
+}
+
+enum SyncRunStatus {
+  success
+  failed
+  dry_run
+}
+
+enum UserRole {
+  admin
+}
+
+enum LoginAuditStatus {
+  success
+  failed
+  locked
+}
+
+model User {
+  id           String        @id @default(cuid())
+  email        String        @unique
+  passwordHash String
+  role         UserRole      @default(admin)
+  active       Boolean       @default(true)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  sessions     UserSession[]
+  loginAudits  LoginAudit[]
+
+  @@index([active])
+}
+
+model UserSession {
+  id          String    @id @default(cuid())
+  userId      String
+  tokenHash   String    @unique
+  csrfHash    String
+  userAgent   String?
+  ipAddress   String?
+  createdAt   DateTime  @default(now())
+  expiresAt   DateTime
+  revokedAt   DateTime?
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@index([revokedAt])
+}
+
+model LoginAudit {
+  id        String           @id @default(cuid())
+  userId    String?
+  email     String
+  status    LoginAuditStatus
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime         @default(now())
+  user      User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([email])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model Account {
+  id                    String              @id @default(cuid())
+  name                  String
+  type                  AccountType
+  industry              String
+  location              String
+  website               String?
+  instagram             String?
+  phone                 String?
+  tiktok                String?
+  googleBusinessProfile String?
+  audienceSize          Int                 @default(0)
+  budgetClass           BudgetClass         @default(MENENGAH)
+  decisionMaker         String
+  problemHypothesis     String
+  priorityScore         Int                 @default(50)
+  dealValue             Int                 @default(0)
+  stage                 PipelineStage       @default(BELUM_DIHUBUNGI)
+  owner                 ProspectOwner
+  source                String?
+  externalId            String?             @unique
+  notes                 String?
+  nextAction            String?
+  briefStatus           BriefStatus?        @default(BELUM_BRIEF)
+  lastContactAt         DateTime?
+  meetingDate           DateTime?
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+  offerMatches          AccountOfferMatch[]
+  opportunities         Opportunity[]
+
+  @@index([owner])
+  @@index([stage])
+  @@index([meetingDate])
+  @@index([name])
+}
+
+model AccountOfferMatch {
+  id        String  @id @default(cuid())
+  accountId String
+  offerName String
+  sortOrder Int     @default(0)
+  account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@unique([accountId, offerName])
+  @@index([offerName])
+}
+
+model Offer {
+  id                String              @id
+  productLine       ProductLine
+  name              String              @unique
+  pricingNote       String
+  pricePerProspect  Int?
+  packagePrice      Int?
+  targetMarkets     OfferTargetMarket[]
+  deliverables      OfferDeliverable[]
+  opportunities     Opportunity[]
+}
+
+model OfferTargetMarket {
+  id        String      @id @default(cuid())
+  offerId   String
+  market    AccountType
+  offer     Offer       @relation(fields: [offerId], references: [id], onDelete: Cascade)
+
+  @@unique([offerId, market])
+}
+
+model OfferDeliverable {
+  id        String @id @default(cuid())
+  offerId   String
+  label     String
+  sortOrder Int    @default(0)
+  offer     Offer  @relation(fields: [offerId], references: [id], onDelete: Cascade)
+
+  @@unique([offerId, label])
+}
+
+model Opportunity {
+  id                String        @id @default(cuid())
+  accountId         String
+  offerId           String
+  stage             PipelineStage @default(BELUM_DIHUBUNGI)
+  dealValue         Int           @default(0)
+  probability       Int           @default(50)
+  expectedCloseDate DateTime
+  source            String
+  owner             ProspectOwner
+  nextAction        String
+  account           Account       @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  offer             Offer         @relation(fields: [offerId], references: [id])
+
+  @@index([stage])
+  @@index([owner])
+  @@index([expectedCloseDate])
+}
+
+model AiResearchJob {
+  id          String            @id @default(cuid())
+  query       String
+  status      ResearchJobStatus @default(queued)
+  requestedBy ProspectOwner
+  found       Int               @default(0)
+  valid       Int               @default(0)
+  duplicates  Int               @default(0)
+  createdAt   DateTime          @default(now())
+  finishedAt  DateTime?
+  notes       String
+  provider    ResearchProvider  @default(mock)
+  error       String?
+  findings    LeadFinding[]
+
+  @@index([requestedBy])
+  @@index([status])
+}
+
+model LeadFinding {
+  id                String                  @id @default(cuid())
+  jobId             String
+  name              String
+  type              AccountType
+  industry          String
+  location          String
+  website           String?
+  phone             String?
+  address           String?
+  googlePlaceId     String?
+  rating            Float?
+  userRatingsTotal  Int?
+  source            FindingSource
+  reasonFit         String
+  problemHypothesis String
+  priorityScore     Int                     @default(50)
+  owner             ProspectOwner
+  status            FindingStatus           @default(pending)
+  createdAt         DateTime                @default(now())
+  syncedAt          DateTime?
+  job               AiResearchJob           @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  offerMatches      LeadFindingOfferMatch[]
+
+  @@index([status])
+  @@index([owner])
+  @@index([googlePlaceId])
+}
+
+model LeadFindingOfferMatch {
+  id        String      @id @default(cuid())
+  findingId String
+  offerName String
+  sortOrder Int         @default(0)
+  finding   LeadFinding @relation(fields: [findingId], references: [id], onDelete: Cascade)
+
+  @@unique([findingId, offerName])
+  @@index([offerName])
+}
+
+model SyncTarget {
+  id          Int       @id @default(1)
+  endpointUrl String    @default("")
+  authHeader  String?
+  enabled     Boolean   @default(false)
+  updatedAt   DateTime?
+}
+
+model SyncRun {
+  id             String        @id @default(cuid())
+  status         SyncRunStatus
+  targetUrl      String
+  accountCount   Int           @default(0)
+  findingCount   Int           @default(0)
+  createdAt      DateTime      @default(now())
+  responseStatus Int?
+  responseBody   String?
+  error          String?
+
+  @@index([status])
+  @@index([createdAt])
+}
