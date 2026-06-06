@@ -205,10 +205,11 @@ apiRouter.post("/inbox/leads", (req, res) => {
 
   updateDb((db) => {
     for (const lead of leads) {
-      const existing = db.accounts.find((account) =>
-        account.name.toLowerCase() === lead.name.toLowerCase()
-        || Boolean(lead.externalId && account.externalId === lead.externalId)
-      );
+      const existing = db.accounts.find((account) => {
+        if (lead.externalId) return account.externalId === lead.externalId;
+        return account.name.toLowerCase() === lead.name.toLowerCase()
+          && account.location.toLowerCase() === lead.location.toLowerCase();
+      });
 
       if (existing) {
         Object.assign(existing, {
