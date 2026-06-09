@@ -2181,3 +2181,214 @@ select option {
   border-color: #075985 !important;
   color: #bae6fd !important;
 }
+
+/* Daus near-black theme refinements */
+:root {
+  color: #f4f4f5;
+  background: #111111;
+}
+
+body,
+#root,
+.leadApp,
+.leadMain,
+.crmDashboardPage,
+.leadsSearchSection,
+.settingsPage,
+.researchPage,
+.schedulePage,
+.dealsPage,
+.dealColumns {
+  background: #111111 !important;
+  color: #f4f4f5 !important;
+}
+
+.darkSidebar,
+.topFilterBar,
+.viewTabs,
+.tableHeader,
+.paginationBar,
+.detailHeader,
+.dealsTopbar,
+.dealViewTabs,
+.dealColumnHeader {
+  background: #141414 !important;
+  border-color: #2a2a2a !important;
+}
+
+.sidebarStats,
+.sidebarAuth,
+.leadTablePane,
+.leadRow,
+.expandedRow,
+.detailPanel,
+.manualModal,
+.authCard,
+.settingsCard,
+.offerItem,
+.bulkBar,
+.dealColumn,
+.dealKanbanCard,
+.dealCard,
+.scheduleCard,
+.meetingCard,
+.columnEmptyState {
+  background: #161616 !important;
+  border-color: #2a2a2a !important;
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.38) !important;
+}
+
+.leadRow:hover,
+.leadRow.selected,
+.dealKanbanCard:hover,
+.dealCard:hover,
+.dealColumn.drag-over {
+  background: #1d1d1d !important;
+  border-color: #37f29b !important;
+}
+
+.sidebarMenu button:hover,
+.sidebarMenu button.active {
+  background: #17251f !important;
+  color: #f4f4f5 !important;
+  border-color: #37f29b !important;
+}
+
+.logoMark,
+.createDealBtn,
+.primaryBtn,
+.primaryWide,
+.authCard button[type="submit"] {
+  background: linear-gradient(135deg, #37f29b, #20d6c6) !important;
+  color: #07110d !important;
+}
+
+.dealsTitle,
+.dealColumnHeader strong,
+.dealCardTitle strong,
+.dealActivity b,
+.businessCol strong,
+.ownerNameCol strong,
+.sidebarLogo h1,
+.pageHeader h2,
+.manualModal h2,
+.authCard h1,
+.settingsCard h3,
+.offerItemHeader h4 {
+  color: #f4f4f5 !important;
+}
+
+.dealsMoney span,
+.dealColumnHeader span,
+.dealActivity span,
+.dealCardFooter span,
+.sidebarLogo p,
+.pageHeader p,
+.businessCol small,
+.ownerNameCol small,
+.expandedRow p,
+.detailBody label,
+.leadQuickInfo,
+.settingsCard p,
+.offersIntro,
+.sidebarStats span,
+.sidebarAuth span,
+.columnEmptyState {
+  color: #a1a1aa !important;
+}
+
+.dealsMoney strong,
+.greenText {
+  color: #37f29b !important;
+}
+
+.blueText,
+.dealViewTabs button.active {
+  color: #20d6c6 !important;
+}
+
+.dealViewTabs button.active {
+  border-bottom-color: #20d6c6 !important;
+}
+
+input,
+select,
+textarea,
+.searchInput,
+.dealsSearch,
+.dealValueInput,
+.meetingDateInput,
+.ghostBtn,
+.detailsBtn,
+.borderBtn,
+.iconOnly,
+.channelIcon {
+  background: #111111 !important;
+  border-color: #2a2a2a !important;
+  color: #f4f4f5 !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #737373 !important;
+}
+
+select option {
+  background: #111111 !important;
+  color: #f4f4f5;
+}
+
+.ghostBtn:hover,
+.detailsBtn:hover,
+.borderBtn:hover,
+.iconOnly:hover,
+.channelIcon.active:hover {
+  background: #1d1d1d !important;
+  border-color: #37f29b !important;
+}
+
+.channelIcon.disabled {
+  color: #525252 !important;
+  background: #111111 !important;
+  border-color: #242424 !important;
+}
+
+.dealCardFooter em {
+  background: #12241d !important;
+  border-color: #235c43 !important;
+  color: #37f29b !important;
+}
+
+.leadApp [style*="background: #ffffff"],
+.leadApp [style*="background:#ffffff"],
+.leadApp [style*="background: rgb(255, 255, 255)"],
+.leadApp [style*="background: #f8fafc"],
+.leadApp [style*="background:#f8fafc"],
+.leadApp [style*="background: rgb(248, 250, 252)"],
+.leadApp [style*="background: #f1f5f9"],
+.leadApp [style*="background:#f1f5f9"],
+.leadApp [style*="background: rgb(241, 245, 249)"],
+.leadApp [style*="background-color: #ffffff"],
+.leadApp [style*="background-color:#ffffff"],
+.leadApp [style*="background-color: rgb(255, 255, 255)"],
+.leadApp [style*="background-color: #f8fafc"],
+.leadApp [style*="background-color:#f8fafc"],
+.leadApp [style*="background-color: rgb(248, 250, 252)"] {
+  background: #161616 !important;
+  border-color: #2a2a2a !important;
+}
+
+.leadApp [style*="color: #0f172a"],
+.leadApp [style*="color:#0f172a"],
+.leadApp [style*="color: rgb(15, 23, 42)"] {
+  color: #f4f4f5 !important;
+}
+
+.leadApp [style*="color: #475569"],
+.leadApp [style*="color:#475569"],
+.leadApp [style*="color: rgb(71, 85, 105)"],
+.leadApp [style*="color: #64748b"],
+.leadApp [style*="color:#64748b"],
+.leadApp [style*="color: rgb(100, 116, 139)"] {
+  color: #a1a1aa !important;
+}
