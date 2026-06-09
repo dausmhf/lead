@@ -130,7 +130,10 @@ function cookieOptions(httpOnly: boolean, maxAgeMs: number): CookieOptions {
 }
 
 export function currentSession(req: Request): SessionPayload | null {
-  return verifySession(parseCookies(req.headers.cookie)[sessionCookie]);
+  const session = verifySession(parseCookies(req.headers.cookie)[sessionCookie]);
+  if (!session) return null;
+  if (session.email.toLowerCase() !== adminEmail.toLowerCase()) return null;
+  return session;
 }
 
 export function registerAuthRoutes(router: Router): void {
