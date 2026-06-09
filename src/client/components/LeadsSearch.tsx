@@ -8,6 +8,10 @@ import {
   Globe, 
   Instagram, 
   Phone, 
+  Mail,
+  Facebook,
+  Linkedin,
+  UserRound,
   ExternalLink,
   Trash2
 } from "lucide-react";
@@ -15,24 +19,30 @@ import type { Account, Offer, PipelineStage, ProspectOwner } from "../../shared/
 
 const stages: PipelineStage[] = [
   "Belum Dihubungi",
-  "Potensial",
-  "Tahap Briefing",
+  "Chat Admin",
+  "Chat Management",
+  "Kirim Proposal",
   "Meeting",
   "Negosiasi",
-  "Kirim Proposal",
-  "Closed Won (Deal)",
-  "Nurturing"
+  "Kirim MOU",
+  "Transfer",
+  "Closed (WON)",
+  "Ditolak"
 ];
+
+const stageRank = new Map<PipelineStage, number>(stages.map((stage, index) => [stage, index]));
 
 const stageColors: Record<string, { bg: string; text: string; border: string; dot: string }> = {
   "Belum Dihubungi": { bg: "#f1f5f9", text: "#475569", border: "#cbd5e1", dot: "#475569" },
-  "Potensial": { bg: "#fffbeb", text: "#d97706", border: "#fde68a", dot: "#d97706" },
-  "Tahap Briefing": { bg: "#eff6ff", text: "#2563eb", border: "#bfdbfe", dot: "#2563eb" },
+  "Chat Admin": { bg: "#fff7ed", text: "#ea580c", border: "#fed7aa", dot: "#ea580c" },
+  "Chat Management": { bg: "#fffbeb", text: "#d97706", border: "#fde68a", dot: "#d97706" },
+  "Kirim Proposal": { bg: "#f5f3ff", text: "#7c3aed", border: "#ddd6fe", dot: "#7c3aed" },
   "Meeting": { bg: "#fdf2f8", text: "#db2777", border: "#fbcfe8", dot: "#db2777" },
   "Negosiasi": { bg: "#fff1f2", text: "#e11d48", border: "#fecdd3", dot: "#e11d48" },
-  "Kirim Proposal": { bg: "#f5f3ff", text: "#7c3aed", border: "#ddd6fe", dot: "#7c3aed" },
-  "Closed Won (Deal)": { bg: "#ecfdf5", text: "#059669", border: "#a7f3d0", dot: "#059669" },
-  "Nurturing": { bg: "#f8fafc", text: "#475569", border: "#e2e8f0", dot: "#475569" }
+  "Kirim MOU": { bg: "#eef2ff", text: "#4f46e5", border: "#c7d2fe", dot: "#4f46e5" },
+  "Transfer": { bg: "#ecfeff", text: "#0891b2", border: "#a5f3fc", dot: "#0891b2" },
+  "Closed (WON)": { bg: "#ecfdf5", text: "#059669", border: "#a7f3d0", dot: "#059669" },
+  "Ditolak": { bg: "#fef2f2", text: "#dc2626", border: "#fecaca", dot: "#dc2626" }
 };
 
 interface Filters {
@@ -76,14 +86,56 @@ interface LeadsSearchProps {
 const stageTabs: Array<{ id: string; label: string; stage?: PipelineStage }> = [
   { id: "all", label: "Semua Prospek" },
   { id: "prospek", label: "Belum Dihubungi", stage: "Belum Dihubungi" },
-  { id: "qualified", label: "Potensial", stage: "Potensial" },
-  { id: "on_brief", label: "Tahap Briefing", stage: "Tahap Briefing" },
+  { id: "chat_admin", label: "Chat Admin", stage: "Chat Admin" },
+  { id: "chat_management", label: "Chat Management", stage: "Chat Management" },
+  { id: "proposal", label: "Kirim Proposal", stage: "Kirim Proposal" },
   { id: "meeting", label: "Meeting", stage: "Meeting" },
   { id: "dealing", label: "Negosiasi", stage: "Negosiasi" },
-  { id: "proposal", label: "Kirim Proposal", stage: "Kirim Proposal" },
-  { id: "completed", label: "Closed Won (Deal)", stage: "Closed Won (Deal)" },
-  { id: "nurture", label: "Nurturing", stage: "Nurturing" }
+  { id: "mou", label: "Kirim MOU", stage: "Kirim MOU" },
+  { id: "transfer", label: "Transfer", stage: "Transfer" },
+  { id: "completed", label: "Closed (WON)", stage: "Closed (WON)" },
+  { id: "rejected", label: "Ditolak", stage: "Ditolak" }
 ];
+
+function phoneUrl(phone?: string) {
+  const digits = phone?.replace(/[^0-9]/g, "");
+  return digits ? `https://wa.me/${digits}` : "";
+}
+
+function instagramUrl(handle?: string) {
+  if (!handle) return "";
+  if (handle.startsWith("http")) return handle;
+  return `https://instagram.com/${handle.replace("@", "")}`;
+}
+
+function socialUrl(value?: string, fallbackBase?: string) {
+  if (!value) return "";
+  if (value.startsWith("http")) return value;
+  return fallbackBase ? `${fallbackBase}${value.replace("@", "")}` : value;
+}
+
+function ChannelLink({
+  href,
+  title,
+  children
+}: {
+  href?: string;
+  title: string;
+  children: React.ReactNode;
+}) {
+  if (!href) {
+    return (
+      <span className="channelIcon disabled" title={`${title} belum ada`}>
+        {children}
+      </span>
+    );
+  }
+  return (
+    <a className="channelIcon active" href={href} target="_blank" rel="noreferrer" title={title}>
+      {children}
+    </a>
+  );
+}
 
 export default function LeadsSearch({
   accounts,
@@ -119,6 +171,19 @@ export default function LeadsSearch({
 
   const activeStage = stageTabs.find((tab) => tab.id === activeView)?.stage;
 
+  const productOptions = useMemo(() => {
+    const productNames = new Set<string>();
+    for (const offer of offers) {
+      if (offer.name) productNames.add(offer.name);
+    }
+    for (const account of accounts) {
+      for (const product of account.offerMatch) {
+        if (product) productNames.add(product);
+      }
+    }
+    return [...productNames].sort((a, b) => a.localeCompare(b, "id"));
+  }, [accounts, offers]);
+
   const countsByStage = useMemo(() => {
     const counts: Record<string, number> = {};
     for (const account of accounts) {
@@ -130,14 +195,22 @@ export default function LeadsSearch({
   const filteredAccounts = useMemo(() => {
     const term = search.trim().toLowerCase();
     return accounts.filter((account) => {
-      const haystack = `${account.name} ${account.industry} ${account.location} ${account.decisionMaker} ${account.offerMatch.join(" ")}`.toLowerCase();
+      const haystack = `${account.name} ${account.industry} ${account.location} ${account.decisionMaker} ${account.ownerName ?? ""} ${account.ownerInstagram ?? ""} ${account.offerMatch.join(" ")}`.toLowerCase();
       return (
         (!term || haystack.includes(term)) &&
         (!activeStage || account.stage === activeStage) &&
         (!city || account.location === city) &&
-        (!industry || account.industry === industry) &&
+        (!industry || account.offerMatch.includes(industry)) &&
         (!owner || account.owner === owner)
       );
+    }).sort((a, b) => {
+      const stageDiff = (stageRank.get(a.stage) ?? 999) - (stageRank.get(b.stage) ?? 999);
+      if (stageDiff !== 0) return stageDiff;
+      const scoreDiff = (b.priorityScore ?? 0) - (a.priorityScore ?? 0);
+      if (scoreDiff !== 0) return scoreDiff;
+      const dealDiff = (b.dealValue ?? 0) - (a.dealValue ?? 0);
+      if (dealDiff !== 0) return dealDiff;
+      return new Date(b.updatedAt ?? b.createdAt ?? 0).getTime() - new Date(a.updatedAt ?? a.createdAt ?? 0).getTime();
     });
   }, [accounts, activeStage, city, industry, owner, search]);
 
@@ -164,11 +237,7 @@ export default function LeadsSearch({
   };
 
   const handleBulkStage = (stage: PipelineStage) => {
-    onBulkUpdate({ stage, briefStatus: stage === "Tahap Briefing" ? "On Brief" : undefined });
-  };
-
-  const handleBulkOwner = (owner: ProspectOwner) => {
-    onBulkUpdate({ owner });
+    onBulkUpdate({ stage, briefStatus: stage === "Kirim Proposal" ? "Brief Sent" : undefined });
   };
 
   return (
@@ -180,7 +249,7 @@ export default function LeadsSearch({
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Cari bisnis, kota, kategori..."
+            placeholder="Cari bisnis, kota, produk..."
           />
         </div>
         
@@ -192,16 +261,9 @@ export default function LeadsSearch({
         </select>
 
         <select value={industry} onChange={(e) => setIndustry(e.target.value)}>
-          <option value="">Semua Kategori</option>
-          {filters?.industries.map((ind) => (
-            <option key={ind} value={ind}>{ind}</option>
-          ))}
-        </select>
-
-        <select value={owner} onChange={(e) => setOwner(e.target.value)}>
-          <option value="">Semua PIC</option>
-          {filters?.owners.map((ow) => (
-            <option key={ow} value={ow}>{ow}</option>
+          <option value="">Semua Produk</option>
+          {productOptions.map((product) => (
+            <option key={product} value={product}>{product}</option>
           ))}
         </select>
 
@@ -266,15 +328,6 @@ export default function LeadsSearch({
               <option key={st} value={st}>{st}</option>
             ))}
           </select>
-          <select 
-            onChange={(e) => e.target.value && handleBulkOwner(e.target.value as ProspectOwner)} 
-            defaultValue=""
-          >
-            <option value="">Ubah PIC</option>
-            {filters?.owners.map((ow) => (
-              <option key={ow} value={ow}>{ow}</option>
-            ))}
-          </select>
           <button className="bulkDeleteBtn" onClick={onBulkDelete}>
             <Trash2 size={13} /> Delete
           </button>
@@ -294,14 +347,15 @@ export default function LeadsSearch({
               />
             </div>
             <div className="chevCell" />
-            <div className="businessCol">Bisnis / Merek</div>
-            <div className="productCol">Rekomendasi Produk</div>
+            <div className="businessCol">Brand</div>
             <div className="progressCol">Progress</div>
-            <div className="phoneCol">Call</div>
+            <div className="productCol">Produk</div>
             <div className="meetingCol">Tgl Meeting</div>
-            <div className="followCol">PIC</div>
-            <div className="channelsCol">Kanal</div>
-            <div className="actionsCol">Nilai Deal & Aksi</div>
+            <div className="channelsCol">Kanal Brand</div>
+            <div className="ownerNameCol">Owner / Management</div>
+            <div className="ownerChannelsCol">Kanal Owner</div>
+            <div className="dealCol">Nilai Deal</div>
+            <div className="actionsOnlyCol">Aksi</div>
           </div>
 
           <div className="leadRows">
@@ -336,6 +390,21 @@ export default function LeadsSearch({
                       </small>
                     </div>
 
+                    <div className="progressCol">
+                      <select
+                        value={account.stage}
+                        onChange={(e) => onPatchAccount(account.id, { 
+                          stage: e.target.value as PipelineStage,
+                          briefStatus: e.target.value === "Kirim Proposal" ? "Brief Sent" : account.briefStatus 
+                        })}
+                        style={{ backgroundColor: color.bg, color: color.text, borderColor: color.border }}
+                      >
+                        {stages.map((st) => (
+                          <option key={st} value={st}>{st}</option>
+                        ))}
+                      </select>
+                    </div>
+
                     <div className="productCol">
                       <select
                         value={account.offerMatch[0] ?? ""}
@@ -346,41 +415,6 @@ export default function LeadsSearch({
                           <option key={off.id} value={off.name}>{off.name}</option>
                         ))}
                       </select>
-                    </div>
-
-                    <div className="progressCol">
-                      <select
-                        value={account.stage}
-                        onChange={(e) => onPatchAccount(account.id, { 
-                          stage: e.target.value as PipelineStage,
-                          briefStatus: e.target.value === "Tahap Briefing" ? "On Brief" : account.briefStatus 
-                        })}
-                        style={{ backgroundColor: color.bg, color: color.text, borderColor: color.border }}
-                      >
-                        {stages.map((st) => (
-                          <option key={st} value={st}>{st}</option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div className="phoneCol">
-                      {account.phone ? (
-                        <a 
-                          className="callBtn"
-                          href={`https://wa.me/${account.phone.replace(/[^0-9]/g, "")}`} 
-                          target="_blank" 
-                          rel="noreferrer"
-                          title={`Call ${account.phone}`}
-                        >
-                          <Phone size={12} />
-                          Call
-                        </a>
-                      ) : (
-                        <button className="callBtn disabled" type="button" disabled title="Nomor HP belum ada">
-                          <Phone size={12} />
-                          Call
-                        </button>
-                      )}
                     </div>
 
                     <div className="meetingCol">
@@ -397,36 +431,32 @@ export default function LeadsSearch({
                       )}
                     </div>
 
-                    <div className="followCol">
-                      <select
-                        value={account.owner}
-                        onChange={(e) => onPatchAccount(account.id, { owner: e.target.value as ProspectOwner })}
-                      >
-                        {filters?.owners.map((ow) => (
-                          <option key={ow} value={ow}>{ow}</option>
-                        ))}
-                      </select>
-                    </div>
-
                     <div className="channelsCol">
-                      {account.website && (
-                        <a href={account.website} target="_blank" rel="noreferrer" title="Website">
-                          <Globe size={13} />
-                        </a>
-                      )}
-                      {account.instagram && (
-                        <a href={`https://instagram.com/${account.instagram.replace("@", "")}`} target="_blank" rel="noreferrer" title="Instagram">
-                          <Instagram size={13} />
-                        </a>
-                      )}
-                      {account.phone && (
-                        <a href={`https://wa.me/${account.phone.replace(/[^0-9]/g, "")}`} target="_blank" rel="noreferrer" title="WhatsApp Chat">
-                          <Phone size={13} />
-                        </a>
-                      )}
+                      <ChannelLink href={account.website} title="Website Brand"><Globe size={13} /></ChannelLink>
+                      <ChannelLink href={instagramUrl(account.instagram)} title="Instagram Brand"><Instagram size={13} /></ChannelLink>
+                      <ChannelLink href={phoneUrl(account.phone)} title="WhatsApp Admin"><Phone size={13} /></ChannelLink>
+                      <ChannelLink href={account.email ? `mailto:${account.email}` : ""} title="Email Brand"><Mail size={13} /></ChannelLink>
+                      <ChannelLink href={socialUrl(account.facebook, "https://facebook.com/")} title="Facebook Brand"><Facebook size={13} /></ChannelLink>
+                      <ChannelLink href={socialUrl(account.linkedin, "https://linkedin.com/in/")} title="LinkedIn Brand"><Linkedin size={13} /></ChannelLink>
                     </div>
 
-                    <div className="actionsCol">
+                    <div className="ownerNameCol">
+                      <strong title={account.ownerName || "Nama owner/management belum ada"}>{account.ownerName || "Belum ada"}</strong>
+                      <small>{account.decisionMaker && account.decisionMaker !== "Belum diketahui" ? account.decisionMaker : "Management belum valid"}</small>
+                    </div>
+
+                    <div className="ownerChannelsCol">
+                      <div className="ownerChannels">
+                        <ChannelLink href={instagramUrl(account.ownerInstagram)} title="Instagram Owner"><Instagram size={13} /></ChannelLink>
+                        <ChannelLink href={phoneUrl(account.ownerPhone)} title="WhatsApp Owner"><Phone size={13} /></ChannelLink>
+                        <ChannelLink href={socialUrl(account.ownerFacebook, "https://facebook.com/")} title="Facebook Owner"><Facebook size={13} /></ChannelLink>
+                        <ChannelLink href={socialUrl(account.ownerLinkedin, "https://linkedin.com/in/")} title="LinkedIn Owner"><Linkedin size={13} /></ChannelLink>
+                        <ChannelLink href={account.ownerEmail ? `mailto:${account.ownerEmail}` : ""} title="Email Owner"><Mail size={13} /></ChannelLink>
+                        {!account.ownerName && <span className="channelIcon disabled" title="Nama owner belum ada"><UserRound size={13} /></span>}
+                      </div>
+                    </div>
+
+                    <div className="dealCol">
                       <div className="dealValueEditor">
                         <span>Rp</span>
                         <input
@@ -451,6 +481,9 @@ export default function LeadsSearch({
                           }}
                         />
                       </div>
+                    </div>
+
+                    <div className="actionsOnlyCol">
                       <button onClick={() => onOpenAccount(account)} className="detailsBtn">
                         <ExternalLink size={12} /> Detail
                       </button>
@@ -482,6 +515,10 @@ export default function LeadsSearch({
                       <div>
                         <h4>Pengambil Keputusan (DM)</h4>
                         <p>{account.decisionMaker}</p>
+                      </div>
+                      <div>
+                        <h4>Data Owner</h4>
+                        <p>{[account.ownerName, account.ownerPhone, account.ownerInstagram, account.ownerFacebook, account.ownerLinkedin, account.ownerEmail].filter(Boolean).join(" | ") || "Belum ada data owner."}</p>
                       </div>
                       <div>
                         <h4>Sumber Data</h4>

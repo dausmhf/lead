@@ -19,8 +19,8 @@ Database lokal runtime: `data/crm-db.json`
 
 ## Login
 
-- Email: `login@mcc.com`
-- Password: `Bismill4h!`
+- Email: `dausmhf@gmail.com`
+- Password: `123.firdaus`
 
 Auth memakai session cookie `HttpOnly`, CSRF token untuk request tulis, rate limit login, dan password hash `scrypt`. Untuk production, ubah `SESSION_SECRET`, `ADMIN_EMAIL`, dan `ADMIN_PASSWORD_HASH` di `.env`.
 

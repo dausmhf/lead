@@ -2,13 +2,15 @@ export type AccountType = "B2B" | "B2G" | "B2P" | "B2COM";
 export type BudgetClass = "Rendah" | "Menengah" | "Tinggi";
 export type PipelineStage =
   | "Belum Dihubungi"
-  | "Potensial"
-  | "Tahap Briefing"
+  | "Chat Admin"
+  | "Chat Management"
+  | "Kirim Proposal"
   | "Meeting"
   | "Negosiasi"
-  | "Kirim Proposal"
-  | "Closed Won (Deal)"
-  | "Nurturing";
+  | "Kirim MOU"
+  | "Transfer"
+  | "Closed (WON)"
+  | "Ditolak";
 
 export type ProspectOwner = "Daus";
 export type FindingStatus = "pending" | "approved" | "rejected" | "synced";
@@ -22,8 +24,17 @@ export interface Account {
   website?: string;
   instagram?: string;
   phone?: string;
+  email?: string;
   tiktok?: string;
+  facebook?: string;
+  linkedin?: string;
   googleBusinessProfile?: string;
+  ownerName?: string;
+  ownerInstagram?: string;
+  ownerPhone?: string;
+  ownerFacebook?: string;
+  ownerLinkedin?: string;
+  ownerEmail?: string;
   audienceSize: number;
   budgetClass: BudgetClass;
   decisionMaker: string;

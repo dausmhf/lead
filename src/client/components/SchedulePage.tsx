@@ -10,13 +10,15 @@ const rupiah = new Intl.NumberFormat("id-ID", {
 
 const stageBadgeColors: Record<string, { bg: string; text: string }> = {
   "Belum Dihubungi": { bg: "#f1f5f9", text: "#475569" },
-  "Potensial": { bg: "#fffbeb", text: "#d97706" },
-  "Tahap Briefing": { bg: "#eff6ff", text: "#2563eb" },
+  "Chat Admin": { bg: "#fff7ed", text: "#ea580c" },
+  "Chat Management": { bg: "#fffbeb", text: "#d97706" },
+  "Kirim Proposal": { bg: "#f5f3ff", text: "#7c3aed" },
   "Meeting": { bg: "#fdf2f8", text: "#db2777" },
   "Negosiasi": { bg: "#fff1f2", text: "#e11d48" },
-  "Kirim Proposal": { bg: "#f5f3ff", text: "#7c3aed" },
-  "Closed Won (Deal)": { bg: "#ecfdf5", text: "#059669" },
-  "Nurturing": { bg: "#f8fafc", text: "#475569" }
+  "Kirim MOU": { bg: "#eef2ff", text: "#4f46e5" },
+  "Transfer": { bg: "#ecfeff", text: "#0891b2" },
+  "Closed (WON)": { bg: "#ecfdf5", text: "#059669" },
+  "Ditolak": { bg: "#f8fafc", text: "#475569" }
 };
 
 interface SchedulePageProps {
@@ -150,7 +152,7 @@ export default function SchedulePage({ accounts, onOpenAccount, onPatchAccount }
           <input
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Cari prospek atau PIC..."
+            placeholder="Cari prospek atau produk..."
             style={{ flex: 1, border: 0, background: "transparent", color: "#0f172a", fontSize: "13px", outline: 0 }}
           />
         </div>
@@ -342,7 +344,6 @@ export default function SchedulePage({ accounts, onOpenAccount, onPatchAccount }
                           whiteSpace: "nowrap",
                           textOverflow: "ellipsis"
                         }}>
-                          PIC: {acc.owner}
                         </span>
                       </div>
                     ))}
@@ -438,7 +439,6 @@ export default function SchedulePage({ accounts, onOpenAccount, onPatchAccount }
                               <MapPin size={11} /> {acc.location || "—"}
                             </span>
                             <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                              <User size={11} /> PIC: {acc.owner}
                             </span>
                             <span style={{ display: "flex", alignItems: "center", gap: "4px", fontWeight: "600", color: "#0f172a" }}>
                               {rupiah.format(acc.dealValue ?? 0)}

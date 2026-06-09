@@ -3,18 +3,20 @@ import { X, AlertCircle } from "lucide-react";
 import type { Account, Offer, Opportunity, PipelineStage, ProspectOwner } from "../../shared/types";
 
 function productOptions(offers: Offer[]) {
-  return [...new Set(["Website Company Profile", "Landing Page Conversion", "Website Toko Online", "Maintenance Website", ...offers.map((offer) => offer.name)])];
+  return [...new Set(["PSH", "Sehat Bercinta", "Media Service KMI", "Media Service Community", ...offers.map((offer) => offer.name)])];
 }
 
 const stages: PipelineStage[] = [
   "Belum Dihubungi",
-  "Potensial",
-  "Tahap Briefing",
+  "Chat Admin",
+  "Chat Management",
+  "Kirim Proposal",
   "Meeting",
   "Negosiasi",
-  "Kirim Proposal",
-  "Closed Won (Deal)",
-  "Nurturing"
+  "Kirim MOU",
+  "Transfer",
+  "Closed (WON)",
+  "Ditolak"
 ];
 
 
@@ -39,10 +41,19 @@ export default function DetailPanel({
   const [nextAction, setNextAction] = useState(account.nextAction ?? "");
   const [notes, setNotes] = useState(account.notes ?? "");
   const [phone, setPhone] = useState(account.phone ?? "");
+  const [email, setEmail] = useState(account.email ?? "");
   const [website, setWebsite] = useState(account.website ?? "");
   const [instagram, setInstagram] = useState(account.instagram ?? "");
   const [tiktok, setTiktok] = useState(account.tiktok ?? "");
+  const [facebook, setFacebook] = useState(account.facebook ?? "");
+  const [linkedin, setLinkedin] = useState(account.linkedin ?? "");
   const [googleBusinessProfile, setGoogleBusinessProfile] = useState(account.googleBusinessProfile ?? "");
+  const [ownerName, setOwnerName] = useState(account.ownerName ?? "");
+  const [ownerInstagram, setOwnerInstagram] = useState(account.ownerInstagram ?? "");
+  const [ownerPhone, setOwnerPhone] = useState(account.ownerPhone ?? "");
+  const [ownerFacebook, setOwnerFacebook] = useState(account.ownerFacebook ?? "");
+  const [ownerLinkedin, setOwnerLinkedin] = useState(account.ownerLinkedin ?? "");
+  const [ownerEmail, setOwnerEmail] = useState(account.ownerEmail ?? "");
   const [meetingDate, setMeetingDate] = useState(account.meetingDate ?? "");
   const [dealValue, setDealValue] = useState(0);
   const [operationMsg, setOperationMsg] = useState<string | null>(null);
@@ -54,10 +65,19 @@ export default function DetailPanel({
     setNextAction(account.nextAction ?? "");
     setNotes(account.notes ?? "");
     setPhone(account.phone ?? "");
+    setEmail(account.email ?? "");
     setWebsite(account.website ?? "");
     setInstagram(account.instagram ?? "");
     setTiktok(account.tiktok ?? "");
+    setFacebook(account.facebook ?? "");
+    setLinkedin(account.linkedin ?? "");
     setGoogleBusinessProfile(account.googleBusinessProfile ?? "");
+    setOwnerName(account.ownerName ?? "");
+    setOwnerInstagram(account.ownerInstagram ?? "");
+    setOwnerPhone(account.ownerPhone ?? "");
+    setOwnerFacebook(account.ownerFacebook ?? "");
+    setOwnerLinkedin(account.ownerLinkedin ?? "");
+    setOwnerEmail(account.ownerEmail ?? "");
     setMeetingDate(account.meetingDate ?? "");
     setOperationMsg(null);
     setDealValue(account.dealValue ?? 0);
@@ -71,10 +91,19 @@ export default function DetailPanel({
       nextAction,
       notes,
       phone,
+      email,
       website,
       instagram,
       tiktok,
+      facebook,
+      linkedin,
       googleBusinessProfile,
+      ownerName,
+      ownerInstagram,
+      ownerPhone,
+      ownerFacebook,
+      ownerLinkedin,
+      ownerEmail,
       meetingDate: meetingDate || undefined,
       dealValue
     });
@@ -127,7 +156,7 @@ export default function DetailPanel({
         </label>
 
         <label>
-          PIC Prospek
+          Owner
           <select 
             value={account.owner} 
             onChange={(event) => onPatch({ owner: event.target.value as ProspectOwner })}
@@ -158,17 +187,22 @@ export default function DetailPanel({
         </label>
 
         <label>
-          Nomor WhatsApp / HP
+          Nomor Admin / WhatsApp Bisnis
           <input value={phone} onChange={(event) => setPhone(event.target.value)} placeholder="Contoh: 628123456789" />
         </label>
 
         <label>
-          Website
+          Email Admin / Brand
+          <input value={email} onChange={(event) => setEmail(event.target.value)} placeholder="admin@example.com" />
+        </label>
+
+        <label>
+          Website Brand
           <input value={website} onChange={(event) => setWebsite(event.target.value)} placeholder="https://..." />
         </label>
 
         <label>
-          Instagram
+          Instagram Brand / Admin
           <input value={instagram} onChange={(event) => setInstagram(event.target.value)} placeholder="@brand" />
         </label>
 
@@ -178,8 +212,50 @@ export default function DetailPanel({
         </label>
 
         <label>
+          Facebook Brand
+          <input value={facebook} onChange={(event) => setFacebook(event.target.value)} placeholder="https://facebook.com/brand" />
+        </label>
+
+        <label>
+          LinkedIn Brand
+          <input value={linkedin} onChange={(event) => setLinkedin(event.target.value)} placeholder="https://linkedin.com/company/brand" />
+        </label>
+
+        <label>
           Google Business Profile
           <input value={googleBusinessProfile} onChange={(event) => setGoogleBusinessProfile(event.target.value)} placeholder="https://maps.google.com/..." />
+        </label>
+
+        <hr className="divider" />
+
+        <label>
+          Nama Owner
+          <input value={ownerName} onChange={(event) => setOwnerName(event.target.value)} placeholder="Nama pemilik / founder..." />
+        </label>
+
+        <label>
+          Instagram Owner
+          <input value={ownerInstagram} onChange={(event) => setOwnerInstagram(event.target.value)} placeholder="@owner" />
+        </label>
+
+        <label>
+          Nomor HP Owner
+          <input value={ownerPhone} onChange={(event) => setOwnerPhone(event.target.value)} placeholder="Contoh: 628..." />
+        </label>
+
+        <label>
+          Facebook Owner
+          <input value={ownerFacebook} onChange={(event) => setOwnerFacebook(event.target.value)} placeholder="https://facebook.com/owner" />
+        </label>
+
+        <label>
+          LinkedIn Owner
+          <input value={ownerLinkedin} onChange={(event) => setOwnerLinkedin(event.target.value)} placeholder="https://linkedin.com/in/owner" />
+        </label>
+
+        <label>
+          Email Owner
+          <input value={ownerEmail} onChange={(event) => setOwnerEmail(event.target.value)} placeholder="owner@example.com" />
         </label>
 
         <label>

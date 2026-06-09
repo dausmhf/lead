@@ -54,7 +54,7 @@ export default function SettingsPage({
         industry: "Retail & Toko Online",
         location: "Bandung",
         owner: "Daus",
-        stage: "Potensial",
+        stage: "Chat Management",
         dealValue: 3500000
       }
     ]

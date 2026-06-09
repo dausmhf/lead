@@ -10,13 +10,15 @@ export const apiRouter = Router();
 
 const stageSchema = z.enum([
   "Belum Dihubungi",
-  "Potensial",
-  "Tahap Briefing",
+  "Chat Admin",
+  "Chat Management",
+  "Kirim Proposal",
   "Meeting",
   "Negosiasi",
-  "Kirim Proposal",
-  "Closed Won (Deal)",
-  "Nurturing"
+  "Kirim MOU",
+  "Transfer",
+  "Closed (WON)",
+  "Ditolak"
 ]);
 
 const accountSchema = z.object({
@@ -29,8 +31,17 @@ const accountSchema = z.object({
   website: z.string().optional(),
   instagram: z.string().optional(),
   phone: z.string().optional(),
+  email: z.string().optional(),
   tiktok: z.string().optional(),
+  facebook: z.string().optional(),
+  linkedin: z.string().optional(),
   googleBusinessProfile: z.string().optional(),
+  ownerName: z.string().optional(),
+  ownerInstagram: z.string().optional(),
+  ownerPhone: z.string().optional(),
+  ownerFacebook: z.string().optional(),
+  ownerLinkedin: z.string().optional(),
+  ownerEmail: z.string().optional(),
   offerMatch: z.array(z.string()).optional(),
   source: z.string().optional(),
   stage: stageSchema.optional(),
@@ -47,8 +58,17 @@ const inboxLeadSchema = z.object({
   website: z.string().optional(),
   instagram: z.string().optional(),
   phone: z.string().optional(),
+  email: z.string().optional(),
   tiktok: z.string().optional(),
+  facebook: z.string().optional(),
+  linkedin: z.string().optional(),
   googleBusinessProfile: z.string().optional(),
+  ownerName: z.string().optional(),
+  ownerInstagram: z.string().optional(),
+  ownerPhone: z.string().optional(),
+  ownerFacebook: z.string().optional(),
+  ownerLinkedin: z.string().optional(),
+  ownerEmail: z.string().optional(),
   decisionMaker: z.string().default("Belum diketahui"),
   problemHypothesis: z.string().default("Perlu validasi pain dan kebutuhan client."),
   offerMatch: z.array(z.string()).default([]),
@@ -118,16 +138,21 @@ apiRouter.get("/health", (_req, res) => res.json({ ok: true, service: "LEAD-WEBS
 
 apiRouter.get("/summary", (_req, res) => {
   const db = readDb();
-  const totalPotentialDeal = db.accounts.reduce((sum, item) => sum + (item.dealValue || 0), 0);
+  const revenueStages = new Set(["Meeting", "Negosiasi", "Kirim MOU", "Transfer", "Closed (WON)"]);
+  const totalPotentialDeal = db.accounts
+    .filter((item) => revenueStages.has(item.stage))
+    .reduce((sum, item) => sum + (item.dealValue || 0), 0);
   const projectedRevenue = db.accounts.reduce((sum, item) => {
     let prob = 50;
-    if (item.stage === "Closed Won (Deal)") prob = 100;
-    else if (item.stage === "Nurturing") prob = 0;
-    else if (item.stage === "Kirim Proposal") prob = 80;
+    if (item.stage === "Closed (WON)") prob = 100;
+    else if (item.stage === "Ditolak") prob = 0;
+    else if (item.stage === "Transfer") prob = 90;
+    else if (item.stage === "Kirim MOU") prob = 80;
     else if (item.stage === "Negosiasi") prob = 70;
     else if (item.stage === "Meeting") prob = 60;
-    else if (item.stage === "Tahap Briefing") prob = 40;
-    else if (item.stage === "Potensial") prob = 25;
+    else if (item.stage === "Kirim Proposal") prob = 40;
+    else if (item.stage === "Chat Management") prob = 25;
+    else if (item.stage === "Chat Admin") prob = 20;
     else if (item.stage === "Belum Dihubungi") prob = 15;
     return sum + (item.dealValue || 0) * (prob / 100);
   }, 0);
@@ -135,12 +160,12 @@ apiRouter.get("/summary", (_req, res) => {
   res.json({
     totalLead: db.accounts.length,
     prospectLead: db.accounts.filter((item) => item.stage === "Belum Dihubungi").length,
-    qualifiedLead: db.accounts.filter((item) => item.stage === "Potensial").length,
-    onBrief: db.accounts.filter((item) => item.stage === "Tahap Briefing").length,
+    chat_managementLead: db.accounts.filter((item) => item.stage === "Chat Management").length,
+    onBrief: db.accounts.filter((item) => item.stage === "Kirim Proposal").length,
     meetingScheduled: db.accounts.filter((item) => item.stage === "Meeting").length,
-    proposalSent: db.accounts.filter((item) => item.stage === "Kirim Proposal").length,
-    closedWon: db.accounts.filter((item) => item.stage === "Closed Won (Deal)").length,
-    closedLost: db.accounts.filter((item) => item.stage === "Nurturing").length,
+    proposalSent: db.accounts.filter((item) => item.stage === "Kirim MOU").length,
+    closedWon: db.accounts.filter((item) => item.stage === "Closed (WON)").length,
+    closedLost: db.accounts.filter((item) => item.stage === "Ditolak").length,
     pendingFindings: db.leadFindings.filter((item) => item.status === "pending").length,
     approvedFindings: db.leadFindings.filter((item) => item.status === "approved").length,
     syncedFindings: db.leadFindings.filter((item) => item.status === "synced").length,
@@ -160,13 +185,15 @@ apiRouter.get("/filters", (_req, res) => {
     industries: [...new Set(db.accounts.map((account) => account.industry).filter(Boolean))].sort(),
     stages: [
       "Belum Dihubungi",
-      "Potensial",
-      "Tahap Briefing",
+      "Chat Admin",
+      "Chat Management",
+      "Kirim Proposal",
       "Meeting",
       "Negosiasi",
-      "Kirim Proposal",
-      "Closed Won (Deal)",
-      "Nurturing"
+      "Kirim MOU",
+      "Transfer",
+      "Closed (WON)",
+      "Ditolak"
     ]
   });
 });
@@ -183,7 +210,7 @@ apiRouter.post("/accounts", (req, res) => {
     problemHypothesis: "Perlu riset AI/manual untuk validasi pain bisnis.",
     offerMatch: parsed.offerMatch ?? [],
     stage: parsed.stage ?? "Belum Dihubungi",
-    briefStatus: parsed.stage === "Tahap Briefing" ? "On Brief" : "Belum Brief",
+    briefStatus: parsed.stage === "Kirim Proposal" ? "On Brief" : "Belum Brief",
     notes: parsed.notes,
     nextAction: parsed.nextAction ?? "Review data dan tentukan brief awal.",
     dealValue: parsed.dealValue ?? 0,
@@ -220,8 +247,17 @@ apiRouter.post("/inbox/leads", (req, res) => {
           website: lead.website,
           instagram: lead.instagram,
           phone: lead.phone,
+          email: lead.email,
           tiktok: lead.tiktok,
+          facebook: lead.facebook,
+          linkedin: lead.linkedin,
           googleBusinessProfile: lead.googleBusinessProfile,
+          ownerName: lead.ownerName,
+          ownerInstagram: lead.ownerInstagram,
+          ownerPhone: lead.ownerPhone,
+          ownerFacebook: lead.ownerFacebook,
+          ownerLinkedin: lead.ownerLinkedin,
+          ownerEmail: lead.ownerEmail,
           decisionMaker: lead.decisionMaker,
           problemHypothesis: lead.problemHypothesis,
           offerMatch: lead.offerMatch.length ? lead.offerMatch : existing.offerMatch,
@@ -251,8 +287,17 @@ apiRouter.post("/inbox/leads", (req, res) => {
         website: lead.website,
         instagram: lead.instagram,
         phone: lead.phone,
+        email: lead.email,
         tiktok: lead.tiktok,
+        facebook: lead.facebook,
+        linkedin: lead.linkedin,
         googleBusinessProfile: lead.googleBusinessProfile,
+        ownerName: lead.ownerName,
+        ownerInstagram: lead.ownerInstagram,
+        ownerPhone: lead.ownerPhone,
+        ownerFacebook: lead.ownerFacebook,
+        ownerLinkedin: lead.ownerLinkedin,
+        ownerEmail: lead.ownerEmail,
         audienceSize: 0,
         budgetClass: lead.priorityScore >= 80 ? "Tinggi" : lead.priorityScore >= 60 ? "Menengah" : "Rendah",
         decisionMaker: lead.decisionMaker,

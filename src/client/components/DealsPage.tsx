@@ -10,24 +10,28 @@ const rupiah = new Intl.NumberFormat("id-ID", {
 
 const dealColumns: Array<{ title: string; stages: PipelineStage[] }> = [
   { title: "Belum Dihubungi", stages: ["Belum Dihubungi"] },
-  { title: "Potensial", stages: ["Potensial"] },
-  { title: "Tahap Briefing", stages: ["Tahap Briefing"] },
+  { title: "Chat Admin", stages: ["Chat Admin"] },
+  { title: "Chat Management", stages: ["Chat Management"] },
+  { title: "Kirim Proposal", stages: ["Kirim Proposal"] },
   { title: "Meeting", stages: ["Meeting"] },
   { title: "Negosiasi", stages: ["Negosiasi"] },
-  { title: "Kirim Proposal", stages: ["Kirim Proposal"] },
-  { title: "Closed Won (Deal)", stages: ["Closed Won (Deal)"] },
-  { title: "Nurturing", stages: ["Nurturing"] }
+  { title: "Kirim MOU", stages: ["Kirim MOU"] },
+  { title: "Transfer", stages: ["Transfer"] },
+  { title: "Closed (WON)", stages: ["Closed (WON)"] },
+  { title: "Ditolak", stages: ["Ditolak"] }
 ];
 
 const stageBorderColors: Record<PipelineStage, string> = {
   "Belum Dihubungi": "#cbd5e1",
-  "Potensial": "#fde68a",
-  "Tahap Briefing": "#bfdbfe",
+  "Chat Admin": "#fed7aa",
+  "Chat Management": "#fde68a",
+  "Kirim Proposal": "#ddd6fe",
   "Meeting": "#fbcfe8",
   "Negosiasi": "#fecdd3",
-  "Kirim Proposal": "#ddd6fe",
-  "Closed Won (Deal)": "#a7f3d0",
-  "Nurturing": "#e2e8f0"
+  "Kirim MOU": "#c7d2fe",
+  "Transfer": "#a5f3fc",
+  "Closed (WON)": "#a7f3d0",
+  "Ditolak": "#fecaca"
 };
 
 function dealValueFor(account: Account) {
@@ -93,7 +97,7 @@ export default function DealsPage({
           <input
             value={dealSearch}
             onChange={(event) => setDealSearch(event.target.value)}
-            placeholder="Cari prospek atau PIC..."
+            placeholder="Cari prospek atau produk..."
           />
         </div>
         <div className="dealsMoney">
@@ -133,8 +137,8 @@ export default function DealsPage({
               <div className="dealCardStack">
                 {items.map((account) => {
                   const value = dealValueFor(account);
-                  const isClosedWon = account.stage === "Closed Won (Deal)";
-                  const isClosedLost = account.stage === "Nurturing";
+                  const isClosedWon = account.stage === "Closed (WON)";
+                  const isClosedLost = false;
                   const cardClass = isClosedWon 
                     ? "dealKanbanCard won" 
                     : isClosedLost 
@@ -169,7 +173,6 @@ export default function DealsPage({
                         <b>{rupiah.format(value)}</b>
                       </div>
                       <div className="dealCardFooter">
-                        <span>PIC: {account.owner}</span>
                         {account.offerMatch[0] && <em>{account.offerMatch[0]}</em>}
                       </div>
                     </article>
@@ -186,4 +189,3 @@ export default function DealsPage({
     </section>
   );
 }
-

@@ -78,7 +78,7 @@ export default function ResearchDashboard({
 
             <div className="formRow">
               <label>
-                Pemohon (PIC)
+                Owner
                 <select
                   value={requestedBy}
                   onChange={(e) => setRequestedBy(e.target.value as ProspectOwner)}
@@ -161,7 +161,7 @@ export default function ResearchDashboard({
 
                 <div className="logBody">
                   <div className="logMeta">
-                    <span>PIC: {job.requestedBy}</span>
+                    <span>Owner: {job.requestedBy}</span>
                     <span>•</span>
                     <span>Provider: {job.provider === "google_places" ? "Google Places" : "Simulator"}</span>
                   </div>

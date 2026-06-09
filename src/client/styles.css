@@ -798,26 +798,28 @@ button {
 .leadContent {
   flex: 1;
   display: flex;
-  overflow: hidden;
+  overflow: auto;
   min-height: 0;
   position: relative;
 }
 
 .leadTablePane {
-  flex: 1;
+  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
-  min-width: 0;
-  overflow: hidden;
+  min-width: 1700px;
+  width: max-content;
+  overflow: visible;
 }
 
 .tableHeader,
 .leadRow {
   display: grid;
-  grid-template-columns: 24px 24px minmax(202px, 1fr) minmax(236px, 1.08fr) minmax(128px, 0.55fr) minmax(78px, 0.36fr) minmax(106px, 0.42fr) minmax(78px, 0.3fr) minmax(50px, 0.22fr) minmax(286px, 0.86fr);
+  grid-template-columns: 24px 24px 280px 150px 230px 126px 88px 196px 240px 164px 174px 128px;
   align-items: center;
   gap: 8px;
   padding: 0 16px;
+  min-width: 1700px;
 }
 
 .tableHeader {
@@ -833,7 +835,8 @@ button {
 
 .leadRows {
   flex: 1;
-  overflow-y: auto;
+  overflow: visible;
+  min-width: 1700px;
   background: #ffffff;
 }
 
@@ -963,8 +966,8 @@ button {
 }
 
 .productCol select {
-  min-height: 42px;
-  padding: 0 16px;
+  min-height: 36px;
+  padding: 0 12px;
 }
 
 .progressCol select {
@@ -1009,14 +1012,18 @@ button {
   cursor: not-allowed;
 }
 
-.channelsCol {
+.channelsCol,
+.ownerChannels,
+.ownerChannelsCol {
   display: flex;
   gap: 6px;
   justify-content: center;
   min-width: 0;
+  flex-wrap: nowrap;
+  white-space: nowrap;
 }
 
-.channelsCol a {
+.channelIcon {
   width: 26px;
   height: 26px;
   border: 1px solid #e2e8f0;
@@ -1026,12 +1033,66 @@ button {
   display: grid;
   place-items: center;
   text-decoration: none;
+  flex: 0 0 26px;
 }
 
-.channelsCol a:hover {
+.channelIcon.active {
+  border-color: #bfdbfe;
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.channelIcon.disabled {
+  background: #f8fafc;
+  color: #cbd5e1;
+  cursor: not-allowed;
+}
+
+.channelIcon.active:hover {
   background: #f1f5f9;
   color: #0f172a;
   border-color: #cbd5e1;
+}
+
+.ownerNameCol {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+  align-content: center;
+}
+
+.ownerNameCol strong {
+  display: block;
+  color: #0f172a;
+  font-size: 12px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.ownerNameCol small {
+  display: block;
+  color: #94a3b8;
+  font-size: 10px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.ownerChannels {
+  justify-content: flex-start;
+}
+
+.dealCol,
+.actionsOnlyCol {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  min-width: 0;
+}
+
+.actionsOnlyCol {
+  gap: 8px;
 }
 
 .actionsCol {
@@ -1042,7 +1103,8 @@ button {
   min-width: 0;
 }
 
-.actionsCol button {
+.actionsCol button,
+.actionsOnlyCol button {
   min-height: 36px;
   border-radius: 6px;
   padding: 0 12px;
@@ -1175,6 +1237,7 @@ button {
 
 .paginationBar {
   min-height: 44px;
+  min-width: 1700px;
   background: #f8fafc;
   border-top: 1px solid #e2e8f0;
   padding: 0 24px;
@@ -1873,14 +1936,7 @@ button {
 @media (max-width: 1300px) {
   .tableHeader,
   .leadRow {
-    grid-template-columns: 24px 24px minmax(200px, 1fr) minmax(140px, 0.55fr) minmax(104px, 0.4fr) minmax(88px, 0.34fr) minmax(58px, 0.24fr) minmax(286px, 0.9fr);
-    gap: 10px;
-    padding: 0 16px;
-  }
-
-  .productCol,
-  .meetingCol {
-    display: none;
+    grid-template-columns: 24px 24px 280px 150px 230px 126px 88px 196px 240px 164px 174px 128px;
   }
   
   .settingsGrid {
@@ -1895,14 +1951,7 @@ button {
 @media (max-width: 1080px) {
   .tableHeader,
   .leadRow {
-    grid-template-columns: 24px 24px minmax(180px, 1fr) minmax(128px, 0.5fr) minmax(82px, 0.34fr) minmax(286px, 0.9fr);
-  }
-
-  .productCol,
-  .meetingCol,
-  .phoneCol,
-  .channelsCol {
-    display: none;
+    grid-template-columns: 24px 24px 280px 150px 230px 126px 88px 196px 240px 164px 174px 128px;
   }
 }
 
@@ -1927,4 +1976,206 @@ button {
   .manualGrid {
     grid-template-columns: 1fr;
   }
+}
+
+/* Daus CRM Dark Theme */
+:root {
+  color: #e5eefb;
+  background: #070b14;
+}
+
+body,
+.leadApp,
+.leadMain,
+.crmDashboardPage,
+.leadsSearchSection,
+.settingsPage,
+.researchPage,
+.schedulePage,
+.dealsPage {
+  background: #070b14 !important;
+  color: #dbe7f6;
+}
+
+.darkSidebar {
+  background: #0b1220;
+  border-right-color: #1f2a44;
+  color: #94a3b8;
+}
+
+.sidebarLogo,
+.sidebarStats,
+.sidebarAuth,
+.topFilterBar,
+.viewTabs,
+.tableHeader,
+.paginationBar,
+.detailHeader {
+  border-color: #1f2a44 !important;
+}
+
+.sidebarLogo h1,
+.pageHeader h2,
+.businessCol strong,
+.ownerNameCol strong,
+.detailHeader h2,
+.manualModal h2,
+.authCard h1,
+.settingsCard h3,
+.offerItemHeader h4 {
+  color: #f8fafc !important;
+}
+
+.sidebarLogo p,
+.pageHeader p,
+.businessCol small,
+.ownerNameCol small,
+.expandedRow p,
+.detailBody label,
+.leadQuickInfo,
+.settingsCard p,
+.offersIntro,
+.sidebarStats span,
+.sidebarAuth span {
+  color: #94a3b8 !important;
+}
+
+.logoMark {
+  background: linear-gradient(135deg, #38bdf8, #22c55e);
+  box-shadow: 0 10px 25px rgba(56, 189, 248, 0.2);
+}
+
+.sidebarMenu button {
+  color: #9ca3af;
+}
+
+.sidebarMenu button:hover,
+.sidebarMenu button.active {
+  background: #10233a;
+  color: #e0f2fe;
+  border-color: #1d4ed8;
+}
+
+.topFilterBar,
+.leadTablePane,
+.leadRow,
+.expandedRow,
+.detailPanel,
+.manualModal,
+.authCard,
+.settingsCard,
+.offerItem,
+.bulkBar,
+.dealColumn,
+.dealCard,
+.scheduleCard,
+.meetingCard {
+  background: #0f172a !important;
+  border-color: #1f2a44 !important;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.28) !important;
+}
+
+.leadRow:hover,
+.leadRow.selected,
+.dealCard:hover {
+  background: #111f35 !important;
+}
+
+.tableHeader,
+.viewTabs {
+  background: #0b1220 !important;
+  color: #8ea5c3 !important;
+}
+
+input,
+select,
+textarea,
+.searchInput,
+.dealValueInput,
+.meetingDateInput {
+  background: #0b1220 !important;
+  border-color: #263452 !important;
+  color: #e5eefb !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #64748b !important;
+}
+
+select option {
+  background: #0b1220;
+  color: #e5eefb;
+}
+
+.primaryBtn,
+.primaryWide,
+.authCard button[type="submit"] {
+  background: linear-gradient(135deg, #0ea5e9, #16a34a) !important;
+  border-color: transparent !important;
+  color: #ffffff !important;
+}
+
+.ghostBtn,
+.detailsBtn,
+.borderBtn,
+.iconOnly,
+.channelIcon {
+  background: #0b1220 !important;
+  border-color: #263452 !important;
+  color: #bfdbfe !important;
+}
+
+.ghostBtn:hover,
+.detailsBtn:hover,
+.borderBtn:hover,
+.channelIcon.active:hover {
+  background: #10233a !important;
+  border-color: #38bdf8 !important;
+}
+
+.channelIcon.disabled {
+  color: #475569 !important;
+  background: #0a1020 !important;
+  border-color: #1b2740 !important;
+}
+
+.deleteBtn,
+.bulkDeleteBtn {
+  background: #2a1117 !important;
+  border-color: #7f1d1d !important;
+  color: #fecaca !important;
+}
+
+.panelBackdrop,
+.modalBackdrop {
+  background: rgba(2, 6, 23, 0.76) !important;
+}
+
+.greenText {
+  color: #34d399 !important;
+}
+
+.blueText {
+  color: #38bdf8 !important;
+}
+
+.statusAlert.success {
+  background: #052e1a !important;
+  border-color: #166534 !important;
+  color: #bbf7d0 !important;
+}
+
+.statusAlert.error,
+.authError {
+  background: #2a1117 !important;
+  border-color: #7f1d1d !important;
+  color: #fecaca !important;
+}
+
+.statusAlert.info,
+.operationAlert {
+  background: #082f49 !important;
+  border-color: #075985 !important;
+  color: #bae6fd !important;
 }

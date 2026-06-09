@@ -36,7 +36,7 @@ import SchedulePage from "./components/SchedulePage";
 interface Summary {
   totalLead: number;
   prospectLead: number;
-  qualifiedLead: number;
+  chat_managementLead: number;
   onBrief: number;
   meetingScheduled: number;
   proposalSent: number;
@@ -63,20 +63,31 @@ type ManualLead = {
   stage: PipelineStage;
   website: string;
   instagram: string;
+  email: string;
   tiktok: string;
+  facebook: string;
+  linkedin: string;
   googleBusinessProfile: string;
+  ownerName: string;
+  ownerInstagram: string;
+  ownerPhone: string;
+  ownerFacebook: string;
+  ownerLinkedin: string;
+  ownerEmail: string;
   nextAction: string;
 };
 
 const stages: PipelineStage[] = [
   "Belum Dihubungi",
-  "Potensial",
-  "Tahap Briefing",
+  "Chat Admin",
+  "Chat Management",
+  "Kirim Proposal",
   "Meeting",
   "Negosiasi",
-  "Kirim Proposal",
-  "Closed Won (Deal)",
-  "Nurturing"
+  "Kirim MOU",
+  "Transfer",
+  "Closed (WON)",
+  "Ditolak"
 ];
 const templateHeaders = [
   "name",
@@ -88,8 +99,17 @@ const templateHeaders = [
   "stage",
   "website",
   "instagram",
+  "email",
   "tiktok",
+  "facebook",
+  "linkedin",
   "google_business_profile",
+  "owner_name",
+  "owner_instagram",
+  "owner_phone",
+  "owner_facebook",
+  "owner_linkedin",
+  "owner_email",
   "next_action",
   "notes"
 ];
@@ -333,8 +353,17 @@ function App() {
           stage: lead.stage,
           website: lead.website || undefined,
           instagram: lead.instagram || undefined,
+          email: lead.email || undefined,
           tiktok: lead.tiktok || undefined,
+          facebook: lead.facebook || undefined,
+          linkedin: lead.linkedin || undefined,
           googleBusinessProfile: lead.googleBusinessProfile || undefined,
+          ownerName: lead.ownerName || undefined,
+          ownerInstagram: lead.ownerInstagram || undefined,
+          ownerPhone: lead.ownerPhone || undefined,
+          ownerFacebook: lead.ownerFacebook || undefined,
+          ownerLinkedin: lead.ownerLinkedin || undefined,
+          ownerEmail: lead.ownerEmail || undefined,
           nextAction: lead.nextAction || "Review prospek dan siapkan langkah berikutnya.",
           source: "Manual Input"
         })
@@ -357,23 +386,34 @@ function App() {
       const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(firstSheet, { defval: "" });
       
       const validStages: PipelineStage[] = [
-        "Belum Dihubungi", "Potensial", "Tahap Briefing", "Meeting",
-        "Negosiasi", "Kirim Proposal", "Closed Won (Deal)", "Nurturing"
+        "Belum Dihubungi", "Chat Admin", "Chat Management", "Kirim Proposal", "Meeting",
+        "Negosiasi", "Kirim MOU", "Transfer", "Closed (WON)", "Ditolak"
       ];
       const stageMap: Record<string, PipelineStage> = {
         "prospek": "Belum Dihubungi",
-        "qualified": "Potensial",
-        "on brief": "Tahap Briefing",
-        "brief sent": "Tahap Briefing",
+        "chat admin": "Chat Admin",
+        "chat_admin": "Chat Admin",
+        "admin": "Chat Admin",
+        "potensial": "Chat Management",
+        "chat_management": "Chat Management",
+        "chat management": "Chat Management",
+        "on brief": "Kirim Proposal",
+        "brief sent": "Kirim Proposal",
+        "tahap briefing": "Kirim Proposal",
         "meeting": "Meeting",
         "negotiation": "Negosiasi",
         "negosiasi": "Negosiasi",
         "proposal": "Kirim Proposal",
         "kirim proposal": "Kirim Proposal",
-        "closed won": "Closed Won (Deal)",
-        "closed won (deal)": "Closed Won (Deal)",
-        "nurture": "Nurturing",
-        "nurturing": "Nurturing"
+        "mou": "Kirim MOU",
+        "kirim mou": "Kirim MOU",
+        "transfer": "Transfer",
+        "closed won": "Closed (WON)",
+        "closed won (deal)": "Closed (WON)",
+        "closed (won)": "Closed (WON)",
+        "nurture": "Ditolak",
+        "nurturing": "Ditolak",
+        "ditolak": "Ditolak"
       };
 
       const leads = rows
@@ -398,8 +438,17 @@ function App() {
             stage: matchedStage,
             website: String(row.website ?? "").trim(),
             instagram: String(row.instagram ?? row.ig ?? "").trim(),
+            email: String(row.email ?? "").trim(),
             tiktok: String(row.tiktok ?? "").trim(),
+            facebook: String(row.facebook ?? row.fb ?? "").trim(),
+            linkedin: String(row.linkedin ?? "").trim(),
             googleBusinessProfile: String(row.google_business_profile ?? row.gbp ?? "").trim(),
+            ownerName: String(row.owner_name ?? row.ownerName ?? "").trim(),
+            ownerInstagram: String(row.owner_instagram ?? row.ownerInstagram ?? "").trim(),
+            ownerPhone: String(row.owner_phone ?? row.ownerPhone ?? "").trim(),
+            ownerFacebook: String(row.owner_facebook ?? row.ownerFacebook ?? "").trim(),
+            ownerLinkedin: String(row.owner_linkedin ?? row.ownerLinkedin ?? "").trim(),
+            ownerEmail: String(row.owner_email ?? row.ownerEmail ?? "").trim(),
             nextAction: String(row.next_action ?? "").trim(),
             notes: String(row.notes ?? "").trim()
           };
@@ -437,8 +486,17 @@ function App() {
       stage: "Belum Dihubungi",
       website: "https://example.com",
       instagram: "@brandcontoh",
+      email: "admin@example.com",
       tiktok: "@brandcontoh",
+      facebook: "https://facebook.com/brandcontoh",
+      linkedin: "https://linkedin.com/company/brandcontoh",
       google_business_profile: "https://maps.google.com/...",
+      owner_name: "Nama Owner",
+      owner_instagram: "@owner",
+      owner_phone: "6281234567890",
+      owner_facebook: "",
+      owner_linkedin: "",
+      owner_email: "owner@example.com",
       next_action: "Review website lama dan follow up WhatsApp",
       notes: "Catatan opsional"
     };
@@ -713,7 +771,7 @@ function Sidebar({
   return (
     <aside className="darkSidebar">
       <div className="sidebarLogo">
-        <div className="logoMark">R</div>
+        <div className="logoMark">D</div>
         <div>
           <h1>Daus Lead</h1>
           <p>Website Prospect</p>
@@ -738,12 +796,12 @@ function Sidebar({
         <div><span>Total Prospek</span><b>{summary?.totalLead ?? 0}</b></div>
         <div><span>Peluang Aktif</span><b className="blueText">{summary ? summary.totalLead - summary.closedWon : 0}</b></div>
         <div><span>Total Revenue</span><b className="greenText">{rupiah.format(summary?.totalPotentialDeal ?? 0)}</b></div>
-        <div><span>Closed Won</span><b className="greenText">{summary?.closedWon ?? 0}</b></div>
+        <div><span>Closed (WON)</span><b className="greenText">{summary?.closedWon ?? 0}</b></div>
       </div>
       <div className="sidebarAuth">
         <div>
           <span>Admin</span>
-          <strong>{user?.email ?? "login@mcc.com"}</strong>
+          <strong>{user?.email ?? "dausmhf@gmail.com"}</strong>
         </div>
         <button onClick={onLogout} title="Logout">
           <LogOut size={15} />
@@ -754,7 +812,7 @@ function Sidebar({
 }
 
 function LoginPage({ onLogin }: { onLogin: (email: string, password: string) => Promise<string | null> }) {
-  const [email, setEmail] = useState("login@mcc.com");
+  const [email, setEmail] = useState("dausmhf@gmail.com");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -829,8 +887,17 @@ function ManualLeadModal({
     stage: "Belum Dihubungi",
     website: "",
     instagram: "",
+    email: "",
     tiktok: "",
+    facebook: "",
+    linkedin: "",
     googleBusinessProfile: "",
+    ownerName: "",
+    ownerInstagram: "",
+    ownerPhone: "",
+    ownerFacebook: "",
+    ownerLinkedin: "",
+    ownerEmail: "",
     nextAction: ""
   });
 
@@ -854,7 +921,7 @@ function ManualLeadModal({
           <label>Kategori Industri<input value={lead.industry} onChange={(event) => setField("industry", event.target.value)} /></label>
           <label>Kota<input value={lead.location} onChange={(event) => setField("location", event.target.value)} /></label>
           <label>
-            PIC Prospek
+            Owner
             <select value={lead.owner} onChange={(event) => setField("owner", event.target.value as ProspectOwner)}>
               {pics.map((pic) => <option key={pic} value={pic}>{pic}</option>)}
             </select>

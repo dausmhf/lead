@@ -91,7 +91,7 @@ export default function LeadFindingsReview({
             </div>
 
             <div className="findingFooter">
-              <span className="ownerTag">PIC: {finding.owner}</span>
+              <span className="ownerTag">Owner: {finding.owner}</span>
               <div className="actionButtons">
                 <button
                   className="rejectBtn"

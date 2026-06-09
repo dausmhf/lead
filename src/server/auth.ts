@@ -5,9 +5,9 @@ import { z } from "zod";
 const sessionCookie = "crm_session";
 const csrfCookie = "crm_csrf";
 const sessionTtlMs = 1000 * 60 * 60 * 8;
-const adminEmail = process.env.ADMIN_EMAIL ?? "login@mcc.com";
+const adminEmail = process.env.ADMIN_EMAIL ?? "dausmhf@gmail.com";
 const adminPasswordHash = process.env.ADMIN_PASSWORD_HASH
-  ?? "scrypt$16384$8$1$Dt1U6Hhkyx0ujD81OVw8cA$9MjE4MG0pmWhqoGjK-t5FGjWicY8oYN0JiV-zpmUXD6QB1aBGhIgauFzMBIHOJwkMZn4hWOrsD52pMXPB4oHlw";
+  ?? "scrypt$16384$8$1$Sjv5iswjoDjik-vK6p6yFw$NNh-yXS1TQ8hO8w6d_oSSqZ8rVIovBCELJmWKfijXm_pYWZzO9m5duyx7TXgEQ4wSCu0-an4WSHM9mdq8eCFVg";
 
 const loginSchema = z.object({
   email: z.string().email().transform((value) => value.toLowerCase().trim()),
