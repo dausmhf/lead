@@ -11,6 +11,24 @@ const port = Number(process.env.PORT ?? 8788);
 
 const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN ?? "https://dashboard.dausmhf.com";
 
+function assertProductionConfig(): void {
+  if (process.env.NODE_ENV !== "production") return;
+  const requiredSecrets = [
+    ["SESSION_SECRET", 32],
+    ["ADMIN_PASSWORD_HASH", 32],
+    ["WHATSAPP_WEBHOOK_SECRET", 32]
+  ] as const;
+  for (const [name, minLength] of requiredSecrets) {
+    const value = process.env[name];
+    if (!value || value.length < minLength) {
+      throw new Error(`${name} wajib diisi minimal ${minLength} karakter untuk production.`);
+    }
+  }
+}
+
+assertProductionConfig();
+app.set("trust proxy", 1);
+
 app.use(cors({
   origin: ALLOWED_ORIGIN,
   methods: ["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
@@ -49,8 +67,8 @@ const authLimiter = rateLimit({
   message: { error: "Too many login attempts." }
 });
 
-registerAuthRoutes(authRouter);
 authRouter.use("/auth/login", authLimiter);
+registerAuthRoutes(authRouter);
 app.use("/api", authRouter);
 app.use("/api", requireAuth, apiRouter);
 

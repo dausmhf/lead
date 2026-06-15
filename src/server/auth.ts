@@ -6,8 +6,6 @@ const sessionCookie = "crm_session";
 const csrfCookie = "crm_csrf";
 const sessionTtlMs = 1000 * 60 * 60 * 8;
 const adminEmail = process.env.ADMIN_EMAIL ?? "dausmhf@gmail.com";
-const adminPasswordHash = process.env.ADMIN_PASSWORD_HASH;
-
 const loginSchema = z.object({
   email: z.string().email().transform((value) => value.toLowerCase().trim()),
   password: z.string().min(1).max(256)
@@ -31,6 +29,15 @@ function getSessionSecret(): string {
     throw new Error("SESSION_SECRET wajib diisi minimal 32 karakter untuk production.");
   }
   return "dev-only-change-this-session-secret-minimum-32-chars";
+}
+
+function getAdminPasswordHash(): string {
+  const hash = process.env.ADMIN_PASSWORD_HASH;
+  if (hash) return hash;
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("ADMIN_PASSWORD_HASH wajib diisi untuk production.");
+  }
+  return "";
 }
 
 function parseCookies(header: string | undefined): Record<string, string> {
@@ -146,7 +153,7 @@ export function registerAuthRoutes(router: Router): void {
     }
 
     const validEmail = parsed.email === adminEmail.toLowerCase();
-    const validPassword = verifyPassword(parsed.password, adminPasswordHash);
+    const validPassword = verifyPassword(parsed.password, getAdminPasswordHash());
     if (!validEmail || !validPassword) {
       recordFailedAttempt(key);
       await new Promise((resolve) => setTimeout(resolve, 350));
