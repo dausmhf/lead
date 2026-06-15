@@ -2701,6 +2701,25 @@ select option {
   gap: 12px;
 }
 
+.waReplyPanel {
+  border-top: 1px solid #2a2a2a;
+  background: #111111;
+  padding: 16px 20px;
+  display: grid;
+  gap: 12px;
+}
+
+.waReplyPanel h3,
+.waLeadCreator h3,
+.waFollowUpDrawer h3 {
+  margin: 0;
+  color: #f4f4f5;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
 .waScreeningGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2713,6 +2732,83 @@ select option {
   color: #a1a1aa;
   font-size: 12px;
   font-weight: 700;
+}
+
+.waScreeningGrid input,
+.waScreeningGrid select,
+.waScreeningGrid textarea {
+  min-height: 38px;
+  border: 1px solid #2a2a2a;
+  border-radius: 8px;
+  background: #111111;
+  color: #f4f4f5;
+  padding: 8px 12px;
+  outline: 0;
+}
+
+.waScreeningGrid textarea {
+  min-height: 86px;
+  resize: vertical;
+}
+
+.waInlineActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.waLeadCreator {
+  border: 1px solid #2a2a2a;
+  border-radius: 8px;
+  background: #111111;
+  padding: 14px;
+  display: grid;
+  gap: 12px;
+}
+
+.waFollowUpDrawer {
+  border-top: 1px solid #2a2a2a;
+  background: #141414;
+  padding: 14px 24px;
+  display: grid;
+  grid-template-columns: 220px repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
+  align-items: start;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.waFollowUpDrawer > p {
+  margin: 0;
+  color: #a1a1aa;
+  font-size: 12px;
+}
+
+.waFollowUpItem {
+  border: 1px solid #2a2a2a;
+  border-radius: 8px;
+  background: #111111;
+  padding: 12px;
+  display: grid;
+  gap: 8px;
+}
+
+.waFollowUpItem strong {
+  display: block;
+  color: #f4f4f5;
+  font-size: 13px;
+}
+
+.waFollowUpItem span,
+.waFollowUpItem p {
+  color: #a1a1aa;
+  font-size: 11px;
+}
+
+.waFollowUpItem p {
+  margin: 0;
+  max-height: 46px;
+  overflow: hidden;
 }
 
 .waInboxEmpty {

@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Link2, MessageCircle, RefreshCw, Save, ShieldCheck } from "lucide-react";
-import type { Account, WhatsAppContact, WhatsAppLeadSignal, WhatsAppMessage } from "../../shared/types";
+import { CalendarClock, Link2, MessageCircle, Plus, RefreshCw, Save, Send, ShieldCheck } from "lucide-react";
+import type { Account, WhatsAppContact, WhatsAppFollowUpTask, WhatsAppLeadSignal, WhatsAppMessage, WhatsAppTemplate } from "../../shared/types";
 
 interface InboxContact extends WhatsAppContact {
   account?: Account;
@@ -45,6 +45,15 @@ export default function WhatsappInbox({
   const [classification, setClassification] = useState<WhatsAppLeadSignal>("unknown");
   const [accountId, setAccountId] = useState("");
   const [notes, setNotes] = useState("");
+  const [templates, setTemplates] = useState<WhatsAppTemplate[]>([]);
+  const [followUps, setFollowUps] = useState<Array<WhatsAppFollowUpTask & { account?: Account; contact?: WhatsAppContact }>>([]);
+  const [selectedTemplateId, setSelectedTemplateId] = useState("");
+  const [replyText, setReplyText] = useState("");
+  const [leadName, setLeadName] = useState("");
+  const [leadIndustry, setLeadIndustry] = useState("");
+  const [leadLocation, setLeadLocation] = useState("Indonesia");
+  const [followUpTitle, setFollowUpTitle] = useState("Follow up WhatsApp");
+  const [followUpAt, setFollowUpAt] = useState("");
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState("");
 
@@ -70,7 +79,16 @@ export default function WhatsappInbox({
   }
 
   useEffect(() => {
-    void loadInbox();
+    async function loadBase() {
+      await loadInbox();
+      const [templatesRes, followUpsRes] = await Promise.all([
+        apiFetch("/api/whatsapp/templates"),
+        apiFetch("/api/whatsapp/follow-ups")
+      ]);
+      if (templatesRes.ok) setTemplates(await templatesRes.json());
+      if (followUpsRes.ok) setFollowUps(await followUpsRes.json());
+    }
+    void loadBase();
   }, []);
 
   useEffect(() => {
@@ -78,6 +96,9 @@ export default function WhatsappInbox({
     setClassification(selectedContact.classification);
     setAccountId(selectedContact.accountId ?? "");
     setNotes(selectedContact.notes ?? "");
+    setLeadName(selectedContact.account?.name || selectedContact.name || "");
+    setLeadIndustry(selectedContact.account?.industry || "");
+    setLeadLocation(selectedContact.account?.location || "Indonesia");
   }, [selectedContact?.phone]);
 
   async function selectContact(phone: string) {
@@ -119,6 +140,120 @@ export default function WhatsappInbox({
       setTimeout(() => setStatus(""), 3000);
     } catch (error) {
       setStatus(error instanceof Error ? error.message : "Gagal menyimpan screening kontak.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function reloadFollowUps() {
+    const followUpsRes = await apiFetch("/api/whatsapp/follow-ups");
+    if (followUpsRes.ok) setFollowUps(await followUpsRes.json());
+  }
+
+  async function applyTemplate(templateId: string) {
+    if (!selectedContact) return;
+    setSelectedTemplateId(templateId);
+    if (!templateId) return;
+    const response = await apiFetch("/api/whatsapp/render-template", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ templateId, phone: selectedContact.phone, accountId: accountId || selectedContact.accountId })
+    });
+    if (response.ok) {
+      const payload = await response.json();
+      setReplyText(payload.body ?? "");
+    }
+  }
+
+  async function sendReply() {
+    if (!selectedContact || !replyText.trim()) return;
+    setBusy(true);
+    try {
+      const response = await apiFetch(`/api/whatsapp/send-contact/${selectedContact.phone}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          body: replyText,
+          accountId: accountId || selectedContact.accountId,
+          contactName: selectedContact.name || selectedContact.account?.name
+        })
+      });
+      const payload = await response.json();
+      await selectContact(selectedContact.phone);
+      await loadInbox(selectedContact.phone);
+      await onDataChanged();
+      setReplyText("");
+      setStatus(response.ok ? "Balasan WhatsApp terkirim." : payload.error ?? "Gagal mengirim balasan.");
+      setTimeout(() => setStatus(""), 3000);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function createLead() {
+    if (!selectedContact || !leadName.trim()) return;
+    setBusy(true);
+    try {
+      const response = await apiFetch(`/api/whatsapp/contacts/${selectedContact.phone}/create-lead`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: leadName,
+          industry: leadIndustry || "Belum diklasifikasi",
+          location: leadLocation || "Indonesia",
+          offerMatch: ["Website Company Profile"],
+          notes
+        })
+      });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error ?? "Gagal membuat lead dari kontak WA.");
+      await loadInbox(selectedContact.phone);
+      await onDataChanged();
+      setAccountId(payload.account.id);
+      setStatus("Lead baru berhasil dibuat dari kontak WhatsApp.");
+      setTimeout(() => setStatus(""), 3000);
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : "Gagal membuat lead dari kontak WA.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function scheduleFollowUp() {
+    if (!selectedContact || !replyText.trim() || !followUpAt) return;
+    setBusy(true);
+    try {
+      const response = await apiFetch("/api/whatsapp/follow-ups", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contactPhone: selectedContact.phone,
+          accountId: accountId || selectedContact.accountId,
+          templateId: selectedTemplateId || undefined,
+          title: followUpTitle,
+          body: replyText,
+          dueAt: new Date(followUpAt).toISOString()
+        })
+      });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error ?? "Gagal menjadwalkan follow-up.");
+      await reloadFollowUps();
+      setStatus("Follow-up masuk queue.");
+      setTimeout(() => setStatus(""), 3000);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function sendFollowUp(taskId: string) {
+    setBusy(true);
+    try {
+      const response = await apiFetch(`/api/whatsapp/follow-ups/${taskId}/send`, { method: "POST" });
+      const payload = await response.json();
+      await reloadFollowUps();
+      if (selectedPhone) await selectContact(selectedPhone);
+      setStatus(response.ok ? "Follow-up terkirim." : payload.error ?? "Follow-up gagal dikirim.");
+      setTimeout(() => setStatus(""), 3000);
     } finally {
       setBusy(false);
     }
@@ -168,7 +303,7 @@ export default function WhatsappInbox({
               <div className="waConversationHeader">
                 <div>
                   <h3>{selectedContact.name || selectedContact.account?.name || selectedContact.phone}</h3>
-                  <span>{selectedContact.status} · terakhir {formatTime(selectedContact.lastMessageAt)}</span>
+                  <span>{selectedContact.status} - terakhir {formatTime(selectedContact.lastMessageAt)}</span>
                 </div>
                 {selectedContact.account && (
                   <button className="ghostBtn" type="button" onClick={() => onOpenAccount(selectedContact.account!)}>
@@ -182,12 +317,43 @@ export default function WhatsappInbox({
                   <div key={message.id} className={`waBubble ${message.direction}`}>
                     <div>
                       <strong>{message.direction === "outbound" ? "Daus" : selectedContact.name || selectedContact.phone}</strong>
-                      <span>{message.signal} · {formatTime(message.createdAt)}</span>
+                      <span>{message.signal} - {formatTime(message.createdAt)}</span>
                     </div>
                     <p>{message.body}</p>
                     {message.error && <small>{message.error}</small>}
                   </div>
                 ))}
+              </div>
+
+              <div className="waReplyPanel">
+                <h3><Send size={15} /> Reply Center</h3>
+                <div className="waScreeningGrid">
+                  <label>
+                    Template Pesan
+                    <select value={selectedTemplateId} onChange={(event) => applyTemplate(event.target.value)}>
+                      <option value="">Tulis manual</option>
+                      {templates.map((template) => (
+                        <option key={template.id} value={template.id}>{template.name}</option>
+                      ))}
+                    </select>
+                  </label>
+                  <label>
+                    Jadwal Follow-up
+                    <input type="datetime-local" value={followUpAt} onChange={(event) => setFollowUpAt(event.target.value)} />
+                  </label>
+                  <label className="wideField">
+                    Pesan
+                    <textarea value={replyText} onChange={(event) => setReplyText(event.target.value)} placeholder="Tulis balasan WhatsApp atau pilih template..." />
+                  </label>
+                </div>
+                <div className="waInlineActions">
+                  <button className="primaryBtn" type="button" onClick={sendReply} disabled={busy || !replyText.trim()}>
+                    <Send size={14} /> Kirim Sekarang
+                  </button>
+                  <button className="ghostBtn" type="button" onClick={scheduleFollowUp} disabled={busy || !replyText.trim() || !followUpAt}>
+                    <CalendarClock size={14} /> Jadwalkan
+                  </button>
+                </div>
               </div>
 
               <div className="waScreeningPanel">
@@ -213,9 +379,35 @@ export default function WhatsappInbox({
                     <textarea value={notes} onChange={(event) => setNotes(event.target.value)} placeholder="Contoh: tanya harga, cocok dikirim paket company profile..." />
                   </label>
                 </div>
-                <button className="primaryBtn" type="button" onClick={saveScreening} disabled={busy}>
-                  <Save size={14} /> Simpan Screening
-                </button>
+                {!selectedContact.accountId && (
+                  <div className="waLeadCreator">
+                    <h3><Plus size={15} /> Buat Lead dari Kontak Ini</h3>
+                    <div className="waScreeningGrid">
+                      <label>
+                        Nama Lead
+                        <input value={leadName} onChange={(event) => setLeadName(event.target.value)} placeholder="Nama bisnis / kontak" />
+                      </label>
+                      <label>
+                        Industri
+                        <input value={leadIndustry} onChange={(event) => setLeadIndustry(event.target.value)} placeholder="Contoh: klinik gigi" />
+                      </label>
+                      <label>
+                        Lokasi
+                        <input value={leadLocation} onChange={(event) => setLeadLocation(event.target.value)} placeholder="Jakarta" />
+                      </label>
+                    </div>
+                  </div>
+                )}
+                <div className="waInlineActions">
+                  <button className="primaryBtn" type="button" onClick={saveScreening} disabled={busy}>
+                    <Save size={14} /> Simpan Screening
+                  </button>
+                  {!selectedContact.accountId && (
+                    <button className="ghostBtn" type="button" onClick={createLead} disabled={busy || !leadName.trim()}>
+                      <Plus size={14} /> Buat Lead
+                    </button>
+                  )}
+                </div>
               </div>
             </>
           ) : (
@@ -223,6 +415,25 @@ export default function WhatsappInbox({
           )}
         </main>
       </div>
+
+      <aside className="waFollowUpDrawer">
+        <h3><CalendarClock size={15} /> Follow-up Queue</h3>
+        {followUps.filter((task) => task.status === "pending").slice(0, 6).map((task) => (
+          <div className="waFollowUpItem" key={task.id}>
+            <div>
+              <strong>{task.title}</strong>
+              <span>{task.account?.name || task.contact?.name || task.contactPhone} - {formatTime(task.dueAt)}</span>
+            </div>
+            <p>{task.body}</p>
+            <button className="ghostBtn" type="button" disabled={busy} onClick={() => sendFollowUp(task.id)}>
+              <Send size={13} /> Kirim
+            </button>
+          </div>
+        ))}
+        {followUps.filter((task) => task.status === "pending").length === 0 && (
+          <p>Belum ada follow-up pending.</p>
+        )}
+      </aside>
     </section>
   );
 }

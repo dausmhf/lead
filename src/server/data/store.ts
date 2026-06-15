@@ -5,6 +5,7 @@ import { accounts, aiResearchJobs, offers, opportunities } from "./seed";
 
 const dataDir = path.resolve(process.cwd(), "data");
 const dbPath = path.join(dataDir, "crm-db.json");
+const templateCreatedAt = "2026-06-15T00:00:00.000Z";
 
 function initialDatabase(): CrmDatabase {
   return {
@@ -25,7 +26,42 @@ function initialDatabase(): CrmDatabase {
       starsenderBaseUrl: process.env.STARSENDER_BASE_URL ?? "https://api.starsender.online/api"
     },
     whatsappContacts: [],
-    whatsappMessages: []
+    whatsappMessages: [],
+    whatsappTemplates: [
+      {
+        id: "tpl-first-touch-audit",
+        name: "First Touch - Audit Singkat",
+        category: "first_touch",
+        body: "Halo {{contactName}}, saya Daus. Saya sempat cek {{businessName}} dan kayaknya bisa kebantu dengan {{product}} supaya calon client lebih gampang percaya dan klik WhatsApp. Boleh saya kirim audit singkat/ide perapihan websitenya?",
+        enabled: true,
+        createdAt: templateCreatedAt
+      },
+      {
+        id: "tpl-follow-up-soft",
+        name: "Follow Up - Soft Reminder",
+        category: "follow_up",
+        body: "Halo {{contactName}}, izin follow up singkat. Kemarin saya sempat mention soal {{product}} untuk {{businessName}}. Kalau berkenan, saya bisa kirim contoh struktur halaman dan estimasi range biayanya.",
+        enabled: true,
+        createdAt: templateCreatedAt
+      },
+      {
+        id: "tpl-pricing-range",
+        name: "Tanya Harga - Range Paket",
+        category: "pricing",
+        body: "Siap, {{contactName}}. Untuk {{product}}, range awal biasanya menyesuaikan jumlah halaman dan kebutuhan fitur. Kalau boleh, saya tanya dulu: websitenya lebih untuk company profile, landing page campaign, atau katalog/toko online?",
+        enabled: true,
+        createdAt: templateCreatedAt
+      },
+      {
+        id: "tpl-meeting-confirm",
+        name: "Meeting - Konfirmasi Jadwal",
+        category: "meeting",
+        body: "Siap, {{contactName}}. Kita jadwalkan ngobrol singkat ya. Saya akan bantu cek kebutuhan {{businessName}}, target websitenya, dan aset yang sudah tersedia supaya arah proposalnya pas.",
+        enabled: true,
+        createdAt: templateCreatedAt
+      }
+    ],
+    whatsappFollowUps: []
   };
 }
 
@@ -52,7 +88,9 @@ function normalizeDatabase(db: Partial<CrmDatabase>): CrmDatabase {
     whatsappMessages: (db.whatsappMessages ?? base.whatsappMessages).map((message) => ({
       ...message,
       contactPhone: message.contactPhone ?? message.from ?? message.to
-    }))
+    })),
+    whatsappTemplates: db.whatsappTemplates?.length ? db.whatsappTemplates : base.whatsappTemplates,
+    whatsappFollowUps: db.whatsappFollowUps ?? base.whatsappFollowUps
   };
 }
 
@@ -67,7 +105,7 @@ export function readDb(): CrmDatabase {
   ensureDatabase();
   const raw = JSON.parse(readFileSync(dbPath, "utf8")) as Partial<CrmDatabase>;
   const db = normalizeDatabase(raw);
-  if (!raw.whatsappSettings || !raw.whatsappMessages || !raw.whatsappContacts) {
+  if (!raw.whatsappSettings || !raw.whatsappMessages || !raw.whatsappContacts || !raw.whatsappTemplates || !raw.whatsappFollowUps) {
     writeDb(db);
   }
   return db;

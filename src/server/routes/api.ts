@@ -5,7 +5,19 @@ import { prospectTeam } from "../data/seed";
 import { readDb, updateDb, updateSyncTarget } from "../data/store";
 import { createResearchJob, generateOutreach, matchOffers } from "../services/aiResearch";
 import { pushToExternalCrm } from "../services/sync";
-import { generateWaDraft, preferredWaNumber, recordInboundWhatsApp, recordStarsenderWebhook, screenWhatsAppContact, sendWhatsAppMessage } from "../services/whatsapp";
+import {
+  createLeadFromWhatsAppContact,
+  generateWaDraft,
+  preferredWaNumber,
+  recordInboundWhatsApp,
+  recordStarsenderWebhook,
+  renderWaTemplate,
+  scheduleWhatsAppFollowUp,
+  screenWhatsAppContact,
+  sendWhatsAppFollowUp,
+  sendWhatsAppMessage,
+  sendWhatsAppToContact
+} from "../services/whatsapp";
 
 export const apiRouter = Router();
 
@@ -624,6 +636,22 @@ apiRouter.get("/whatsapp/inbox", (_req, res) => {
   res.json({ contacts, totalMessages: db.whatsappMessages.length });
 });
 
+apiRouter.get("/whatsapp/templates", (_req, res) => {
+  res.json(readDb().whatsappTemplates.filter((template) => template.enabled));
+});
+
+apiRouter.get("/whatsapp/follow-ups", (_req, res) => {
+  const db = readDb();
+  const followUps = db.whatsappFollowUps
+    .map((task) => ({
+      ...task,
+      account: task.accountId ? db.accounts.find((account) => account.id === task.accountId) : undefined,
+      contact: db.whatsappContacts.find((contact) => contact.phone === task.contactPhone)
+    }))
+    .sort((a, b) => a.dueAt.localeCompare(b.dueAt));
+  res.json(followUps);
+});
+
 apiRouter.get("/whatsapp/messages/by-phone/:phone", (req, res) => {
   const phone = req.params.phone.replace(/\D/g, "");
   const messages = readDb().whatsappMessages
@@ -642,6 +670,81 @@ apiRouter.post("/whatsapp/contacts/:phone/screen", (req, res) => {
   const contact = screenWhatsAppContact({ phone: req.params.phone, ...body });
   if (!contact) return res.status(404).json({ error: "WhatsApp contact not found" });
   res.json(contact);
+});
+
+apiRouter.post("/whatsapp/contacts/:phone/create-lead", (req, res) => {
+  const body = z.object({
+    name: z.string().min(2),
+    type: z.enum(["B2B", "B2G", "B2P", "B2COM"]).optional(),
+    industry: z.string().optional(),
+    location: z.string().optional(),
+    offerMatch: z.array(z.string()).optional(),
+    owner: z.enum(prospectTeam).optional(),
+    notes: z.string().optional()
+  }).parse(req.body);
+  const created = createLeadFromWhatsAppContact({ phone: req.params.phone, ...body });
+  if (!created) return res.status(404).json({ error: "WhatsApp contact not found" });
+  res.status(201).json(created);
+});
+
+apiRouter.post("/whatsapp/send-contact/:phone", async (req, res, next) => {
+  try {
+    const body = z.object({
+      body: z.string().min(3),
+      accountId: z.string().optional(),
+      contactName: z.string().optional()
+    }).parse(req.body);
+    const message = await sendWhatsAppToContact({
+      contactPhone: req.params.phone,
+      body: body.body,
+      accountId: body.accountId,
+      contactName: body.contactName
+    });
+    res.status(message.status === "failed" ? 502 : 201).json(message);
+  } catch (error) {
+    next(error);
+  }
+});
+
+apiRouter.post("/whatsapp/render-template", (req, res) => {
+  const body = z.object({
+    templateId: z.string(),
+    phone: z.string().optional(),
+    accountId: z.string().optional()
+  }).parse(req.body);
+  const db = readDb();
+  const template = db.whatsappTemplates.find((item) => item.id === body.templateId);
+  if (!template) return res.status(404).json({ error: "Template not found" });
+  const normalizedPhone = body.phone?.replace(/\D/g, "");
+  const contact = normalizedPhone ? db.whatsappContacts.find((item) => item.phone === normalizedPhone) : undefined;
+  const account = body.accountId
+    ? db.accounts.find((item) => item.id === body.accountId)
+    : contact?.accountId
+      ? db.accounts.find((item) => item.id === contact.accountId)
+      : undefined;
+  res.json({ body: renderWaTemplate(template, { contact, account }) });
+});
+
+apiRouter.post("/whatsapp/follow-ups", (req, res) => {
+  const body = z.object({
+    contactPhone: z.string().min(4),
+    accountId: z.string().optional(),
+    templateId: z.string().optional(),
+    title: z.string().min(2),
+    body: z.string().min(3),
+    dueAt: z.string().min(8)
+  }).parse(req.body);
+  res.status(201).json(scheduleWhatsAppFollowUp(body));
+});
+
+apiRouter.post("/whatsapp/follow-ups/:id/send", async (req, res, next) => {
+  try {
+    const task = await sendWhatsAppFollowUp(req.params.id);
+    if (!task) return res.status(404).json({ error: "Pending follow-up not found" });
+    res.status(task.status === "failed" ? 502 : 200).json(task);
+  } catch (error) {
+    next(error);
+  }
 });
 
 apiRouter.post("/whatsapp/inbox/refresh", (_req, res) => {

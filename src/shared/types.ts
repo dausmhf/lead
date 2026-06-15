@@ -191,6 +191,33 @@ export interface WhatsAppMessage {
   createdAt: string;
 }
 
+export type WhatsAppFollowUpStatus = "pending" | "sent" | "skipped" | "failed";
+
+export interface WhatsAppTemplate {
+  id: string;
+  name: string;
+  category: "first_touch" | "follow_up" | "pricing" | "meeting" | "nurture";
+  body: string;
+  enabled: boolean;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface WhatsAppFollowUpTask {
+  id: string;
+  accountId?: string;
+  contactPhone: string;
+  templateId?: string;
+  title: string;
+  body: string;
+  status: WhatsAppFollowUpStatus;
+  dueAt: string;
+  sentMessageId?: string;
+  error?: string;
+  createdAt: string;
+  updatedAt?: string;
+}
+
 export interface CrmDatabase {
   accounts: Account[];
   offers: Offer[];
@@ -202,4 +229,6 @@ export interface CrmDatabase {
   whatsappSettings: WhatsAppSettings;
   whatsappContacts: WhatsAppContact[];
   whatsappMessages: WhatsAppMessage[];
+  whatsappTemplates: WhatsAppTemplate[];
+  whatsappFollowUps: WhatsAppFollowUpTask[];
 }

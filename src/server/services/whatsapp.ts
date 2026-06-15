@@ -1,10 +1,29 @@
-import type { Account, PipelineStage, WhatsAppContact, WhatsAppLeadSignal, WhatsAppMessage, WhatsAppSettings } from "../../shared/types";
+import type {
+  Account,
+  AccountType,
+  PipelineStage,
+  ProspectOwner,
+  WhatsAppContact,
+  WhatsAppFollowUpTask,
+  WhatsAppLeadSignal,
+  WhatsAppMessage,
+  WhatsAppSettings,
+  WhatsAppTemplate
+} from "../../shared/types";
 import { readDb, updateDb } from "../data/store";
 
 interface SendInput {
   account: Account;
   to?: string;
   body: string;
+}
+
+interface SendContactInput {
+  contactPhone: string;
+  body: string;
+  accountId?: string;
+  contactName?: string;
+  signal?: WhatsAppLeadSignal;
 }
 
 interface ProviderResult {
@@ -22,6 +41,12 @@ export function normalizeWaNumber(value?: string): string {
 
 export function preferredWaNumber(account: Account): string {
   return normalizeWaNumber(account.ownerPhone || account.phone);
+}
+
+function defaultContactName(contact?: WhatsAppContact, account?: Account): string {
+  const value = contact?.name || account?.ownerName || account?.decisionMaker || "";
+  if (!value || value === "Belum diketahui") return "Kak";
+  return value.split(" ")[0] || "Kak";
 }
 
 function accountMatchesPhone(account: Account, phone: string): boolean {
@@ -49,6 +74,18 @@ export function generateWaDraft(account: Account): string {
     `${context} ${account.name}. Kayaknya ${account.industry} seperti ini bisa kebantu dengan ${product}, terutama biar calon client lebih gampang percaya dan langsung klik WhatsApp.`,
     "Boleh saya kirim audit singkat/ide perapihan websitenya? Santai, nanti kalau belum relevan juga gapapa."
   ].join(" ");
+}
+
+export function renderWaTemplate(template: WhatsAppTemplate, input: { contact?: WhatsAppContact; account?: Account }): string {
+  const product = input.account?.offerMatch[0] ?? "Website Company Profile";
+  const values: Record<string, string> = {
+    contactName: defaultContactName(input.contact, input.account),
+    businessName: input.account?.name || input.contact?.name || "bisnisnya",
+    product,
+    city: input.account?.location || "",
+    industry: input.account?.industry || ""
+  };
+  return template.body.replace(/\{\{(\w+)\}\}/g, (_match, key: string) => values[key] ?? "");
 }
 
 export function classifyWaText(text: string): WhatsAppLeadSignal {
@@ -204,6 +241,76 @@ export async function sendWhatsAppMessage(input: SendInput): Promise<WhatsAppMes
   }
 }
 
+export async function sendWhatsAppToContact(input: SendContactInput): Promise<WhatsAppMessage> {
+  const settings = readDb().whatsappSettings;
+  const to = normalizeWaNumber(input.contactPhone);
+  if (!to) throw new Error("Nomor WhatsApp kontak belum ada.");
+  const createdAt = new Date().toISOString();
+  const db = readDb();
+  const contact = db.whatsappContacts.find((item) => item.phone === to);
+  const account = input.accountId
+    ? db.accounts.find((item) => item.id === input.accountId)
+    : contact?.accountId
+      ? db.accounts.find((item) => item.id === contact.accountId)
+      : findAccountByPhone(to);
+
+  const messageBase: WhatsAppMessage = {
+    id: `wa-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+    accountId: account?.id,
+    contactPhone: to,
+    to,
+    body: input.body,
+    direction: "outbound",
+    status: "sent",
+    provider: settings.provider,
+    signal: input.signal ?? "cold",
+    createdAt
+  };
+
+  try {
+    const sent = await sendViaProvider(settings, { account: account ?? ({
+      id: input.accountId ?? "",
+      name: input.contactName ?? contact?.name ?? to,
+      type: "B2B",
+      industry: "Belum diklasifikasi",
+      location: "Indonesia",
+      audienceSize: 0,
+      budgetClass: "Menengah",
+      decisionMaker: "Belum diketahui",
+      problemHypothesis: "Kontak WhatsApp perlu screening manual.",
+      offerMatch: ["Website Company Profile"],
+      priorityScore: 50,
+      dealValue: 0,
+      stage: "Chat Admin",
+      owner: "Daus"
+    } as Account), to, body: input.body });
+    const message = { ...messageBase, ...sent };
+    updateDb((nextDb) => {
+      nextDb.whatsappMessages.unshift(message);
+      const linked = message.accountId ? nextDb.accounts.find((item) => item.id === message.accountId) : undefined;
+      if (linked) {
+        linked.lastContactAt = createdAt;
+        if (linked.stage === "Belum Dihubungi") linked.stage = "Chat Admin";
+        linked.nextAction = "Pantau balasan WhatsApp dari inbox.";
+        linked.updatedAt = createdAt;
+      }
+    });
+    upsertContact({ phone: to, name: input.contactName || contact?.name || account?.name, accountId: account?.id, signal: input.signal ?? "cold", createdAt });
+    return message;
+  } catch (error) {
+    const message = {
+      ...messageBase,
+      status: "failed" as const,
+      error: error instanceof Error ? error.message : "Gagal mengirim WhatsApp."
+    };
+    updateDb((nextDb) => {
+      nextDb.whatsappMessages.unshift(message);
+    });
+    upsertContact({ phone: to, name: input.contactName || contact?.name || account?.name, accountId: account?.id, signal: input.signal ?? "cold", createdAt });
+    return message;
+  }
+}
+
 export function recordInboundWhatsApp(input: {
   accountId?: string;
   from: string;
@@ -322,6 +429,128 @@ export function screenWhatsAppContact(input: {
         account.updatedAt = contact.updatedAt;
       }
     }
+  });
+  return updated;
+}
+
+export function createLeadFromWhatsAppContact(input: {
+  phone: string;
+  name: string;
+  type?: AccountType;
+  industry?: string;
+  location?: string;
+  offerMatch?: string[];
+  owner?: ProspectOwner;
+  notes?: string;
+}): { contact: WhatsAppContact; account: Account } | undefined {
+  const phone = normalizeWaNumber(input.phone);
+  const now = new Date().toISOString();
+  let result: { contact: WhatsAppContact; account: Account } | undefined;
+  updateDb((db) => {
+    const contact = db.whatsappContacts.find((item) => item.phone === phone);
+    if (!contact) return;
+    const existing = contact.accountId
+      ? db.accounts.find((account) => account.id === contact.accountId)
+      : db.accounts.find((account) => accountMatchesPhone(account, phone));
+    if (existing) {
+      contact.accountId = existing.id;
+      contact.status = "linked";
+      contact.updatedAt = now;
+      result = { contact, account: existing };
+      return;
+    }
+
+    const account: Account = {
+      id: `acc-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      name: input.name,
+      type: input.type ?? "B2B",
+      industry: input.industry || "Belum diklasifikasi",
+      location: input.location || "Indonesia",
+      phone,
+      audienceSize: 0,
+      budgetClass: "Menengah",
+      decisionMaker: contact.name || "Belum diketahui",
+      problemHypothesis: "Masuk dari WhatsApp Inbox. Perlu screening kebutuhan website dan budget.",
+      offerMatch: input.offerMatch?.length ? input.offerMatch : ["Website Company Profile"],
+      priorityScore: contact.classification === "hot" || contact.classification === "ask_price" ? 75 : 55,
+      dealValue: 3500000,
+      stage: contact.classification === "meeting" ? "Meeting" : contact.classification === "rejected" || contact.classification === "not_valid" ? "Ditolak" : "Chat Admin",
+      owner: input.owner ?? "Daus",
+      source: "WhatsApp Inbox",
+      notes: input.notes || contact.notes,
+      nextAction: "Lanjutkan percakapan dari WA Inbox dan validasi kebutuhan.",
+      createdAt: now,
+      updatedAt: now
+    };
+    db.accounts.unshift(account);
+    db.opportunities.unshift({
+      id: `opp-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      accountId: account.id,
+      offerId: "offer-website-company-profile",
+      stage: account.stage,
+      dealValue: account.dealValue,
+      probability: Math.max(20, Math.min(80, account.priorityScore - 10)),
+      expectedCloseDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 14).toISOString().slice(0, 10),
+      source: "WhatsApp Inbox",
+      owner: account.owner,
+      nextAction: account.nextAction ?? ""
+    });
+    contact.accountId = account.id;
+    contact.name = contact.name || input.name;
+    contact.status = "linked";
+    contact.updatedAt = now;
+    db.whatsappMessages = db.whatsappMessages.map((message) =>
+      message.contactPhone === phone ? { ...message, accountId: account.id } : message
+    );
+    result = { contact, account };
+  });
+  return result;
+}
+
+export function scheduleWhatsAppFollowUp(input: {
+  contactPhone: string;
+  accountId?: string;
+  templateId?: string;
+  title: string;
+  body: string;
+  dueAt: string;
+}): WhatsAppFollowUpTask {
+  const now = new Date().toISOString();
+  const task: WhatsAppFollowUpTask = {
+    id: `wafu-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+    contactPhone: normalizeWaNumber(input.contactPhone),
+    accountId: input.accountId,
+    templateId: input.templateId,
+    title: input.title,
+    body: input.body,
+    status: "pending",
+    dueAt: input.dueAt,
+    createdAt: now
+  };
+  updateDb((db) => {
+    db.whatsappFollowUps.unshift(task);
+  });
+  return task;
+}
+
+export async function sendWhatsAppFollowUp(taskId: string): Promise<WhatsAppFollowUpTask | undefined> {
+  const task = readDb().whatsappFollowUps.find((item) => item.id === taskId);
+  if (!task || task.status !== "pending") return task;
+  const sent = await sendWhatsAppToContact({
+    contactPhone: task.contactPhone,
+    accountId: task.accountId,
+    body: task.body,
+    signal: "warm"
+  });
+  let updated: WhatsAppFollowUpTask | undefined;
+  updateDb((db) => {
+    const nextTask = db.whatsappFollowUps.find((item) => item.id === taskId);
+    if (!nextTask) return;
+    nextTask.status = sent.status === "failed" ? "failed" : "sent";
+    nextTask.sentMessageId = sent.id;
+    nextTask.error = sent.error;
+    nextTask.updatedAt = new Date().toISOString();
+    updated = nextTask;
   });
   return updated;
 }
