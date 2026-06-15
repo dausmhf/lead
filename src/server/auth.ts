@@ -6,8 +6,7 @@ const sessionCookie = "crm_session";
 const csrfCookie = "crm_csrf";
 const sessionTtlMs = 1000 * 60 * 60 * 8;
 const adminEmail = process.env.ADMIN_EMAIL ?? "dausmhf@gmail.com";
-const adminPasswordHash = process.env.ADMIN_PASSWORD_HASH
-  ?? "scrypt$16384$8$1$Sjv5iswjoDjik-vK6p6yFw$NNh-yXS1TQ8hO8w6d_oSSqZ8rVIovBCELJmWKfijXm_pYWZzO9m5duyx7TXgEQ4wSCu0-an4WSHM9mdq8eCFVg";
+const adminPasswordHash = process.env.ADMIN_PASSWORD_HASH;
 
 const loginSchema = z.object({
   email: z.string().email().transform((value) => value.toLowerCase().trim()),
@@ -76,6 +75,7 @@ function verifySession(token: string | undefined): SessionPayload | null {
 }
 
 function verifyPassword(password: string, storedHash: string): boolean {
+  if (!storedHash) return false;
   const [algorithm, nRaw, rRaw, pRaw, salt, hash] = storedHash.split("$");
   if (algorithm !== "scrypt" || !nRaw || !rRaw || !pRaw || !salt || !hash) return false;
 

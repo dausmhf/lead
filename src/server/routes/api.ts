@@ -771,10 +771,11 @@ apiRouter.post("/whatsapp/inbox/refresh", (_req, res) => {
 apiRouter.post("/whatsapp/webhook/starsender", (req, res, next) => {
   try {
     const secret = process.env.WHATSAPP_WEBHOOK_SECRET;
-    if (secret) {
-      const provided = req.get("x-webhook-secret") || String(req.query.secret ?? "");
-      if (provided !== secret) return res.status(401).json({ error: "Invalid webhook secret" });
+    if (!secret) {
+      return res.status(500).json({ error: "WHATSAPP_WEBHOOK_SECRET wajib diisi di environment variables." });
     }
+    const provided = req.get("x-webhook-secret") || String(req.query.secret ?? "");
+    if (provided !== secret) return res.status(401).json({ error: "Invalid webhook secret" });
     const message = recordStarsenderWebhook(req.body);
     res.status(201).json({ ok: true, messageId: message.id, signal: message.signal });
   } catch (error) {

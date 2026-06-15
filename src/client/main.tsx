@@ -1,6 +1,5 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
-import * as XLSX from "xlsx";
 import {
   CalendarDays,
   Search,
@@ -11,7 +10,8 @@ import {
   CalendarCheck,
   Lock,
   LogOut,
-  MessageCircle
+  MessageCircle,
+  Loader2
 } from "lucide-react";
 import type { 
   Account, 
@@ -26,14 +26,20 @@ import type {
 } from "../shared/types";
 import "./styles.css";
 
-// Import modular components
-import DealsPage from "./components/DealsPage";
-import LeadsSearch from "./components/LeadsSearch";
-import SettingsPage from "./components/SettingsPage";
+// Lazy-loaded tab components (code splitting)
+const DealsPage = lazy(() => import("./components/DealsPage"));
+const LeadsSearch = lazy(() => import("./components/LeadsSearch"));
+const SettingsPage = lazy(() => import("./components/SettingsPage"));
+const CrmDashboard = lazy(() => import("./components/CrmDashboard"));
+const SchedulePage = lazy(() => import("./components/SchedulePage"));
+const WhatsappInbox = lazy(() => import("./components/WhatsappInbox"));
+
+// DetailPanel tetap eager — sering dipakai di semua tab
 import DetailPanel from "./components/DetailPanel";
-import CrmDashboard from "./components/CrmDashboard";
-import SchedulePage from "./components/SchedulePage";
-import WhatsappInbox from "./components/WhatsappInbox";
+
+function TabFallback() {
+  return <div style={{ display: "grid", placeItems: "center", height: "60vh", color: "#94a3b8" }}><Loader2 size={32} style={{ animation: "spin 1s linear infinite" }} /></div>;
+}
 
 
 interface Summary {
@@ -218,7 +224,8 @@ function App() {
         setAuthUser(null);
         return;
       }
-      setAccounts(await accountsRes.json());
+      const accountsPayload = await accountsRes.json();
+      setAccounts(Array.isArray(accountsPayload) ? accountsPayload : (accountsPayload.data ?? []));
       setOffers(await offersRes.json());
       setOpportunities(await opportunitiesRes.json());
       setSummary(await summaryRes.json());
@@ -387,6 +394,7 @@ function App() {
   async function importXlsx(file: File) {
     setBusy(true);
     try {
+      const XLSX = await import("xlsx");
       const buffer = await file.arrayBuffer();
       const workbook = XLSX.read(buffer, { type: "array" });
       const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
@@ -482,7 +490,8 @@ function App() {
     }
   }
 
-  function downloadTemplate() {
+  async function downloadTemplate() {
+    const XLSX = await import("xlsx");
     const example = {
       name: "Bisnis Contoh",
       phone: "6281234567890",
@@ -676,6 +685,7 @@ function App() {
         onLogout={handleLogout}
       />
       <main className="leadMain">
+        <Suspense fallback={<TabFallback />}>
         {activeTab === "dashboard" && (
           <CrmDashboard
             accounts={accounts}
@@ -757,6 +767,7 @@ function App() {
             busy={busy}
           />
         )}
+        </Suspense>
 
         {selectedAccount && (
           <>

@@ -8,5 +8,19 @@ export default defineConfig({
     proxy: {
       "/api": "http://127.0.0.1:8788"
     }
+  },
+  build: {
+    target: "es2022",
+    minify: "esbuild",
+    cssMinify: "esbuild",
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ["react", "react-dom"],
+          ui: ["lucide-react"],
+        }
+      }
+    },
+    chunkSizeWarningLimit: 400
   }
 });
