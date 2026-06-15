@@ -11,6 +11,7 @@ import {
   preferredWaNumber,
   recordInboundWhatsApp,
   recordStarsenderWebhook,
+  refreshWhatsAppMessageStatus,
   renderWaTemplate,
   scheduleWhatsAppFollowUp,
   screenWhatsAppContact,
@@ -101,6 +102,7 @@ const whatsappSettingsSchema = z.object({
   provider: z.enum(["mock", "starsender", "waba"]),
   enabled: z.boolean().default(false),
   starsenderApiKey: z.string().optional(),
+  starsenderAccountApiKey: z.string().optional(),
   starsenderBaseUrl: z.string().url().optional().or(z.literal("")),
   wabaAccessToken: z.string().optional(),
   wabaPhoneNumberId: z.string().optional()
@@ -616,6 +618,16 @@ apiRouter.get("/whatsapp/messages/:accountId", (req, res) => {
     .filter((message) => message.accountId === req.params.accountId)
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   res.json(messages);
+});
+
+apiRouter.post("/whatsapp/messages/:id/status", async (req, res) => {
+  try {
+    res.json(await refreshWhatsAppMessageStatus(req.params.id));
+  } catch (error) {
+    res.status(400).json({
+      error: error instanceof Error ? error.message : "Gagal memeriksa status pesan WhatsApp."
+    });
+  }
 });
 
 apiRouter.get("/whatsapp/inbox", (_req, res) => {

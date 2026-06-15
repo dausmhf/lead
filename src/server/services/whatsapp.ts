@@ -28,7 +28,19 @@ interface SendContactInput {
 
 interface ProviderResult {
   externalId?: string;
+  status: WhatsAppMessage["status"];
+  statusMessage?: string;
   raw?: unknown;
+}
+
+class WhatsAppProviderError extends Error {
+  raw?: unknown;
+
+  constructor(message: string, raw?: unknown) {
+    super(message);
+    this.name = "WhatsAppProviderError";
+    this.raw = raw;
+  }
 }
 
 export function normalizeWaNumber(value?: string): string {
@@ -36,7 +48,18 @@ export function normalizeWaNumber(value?: string): string {
   if (!digits) return "";
   if (digits.startsWith("62")) return digits;
   if (digits.startsWith("0")) return `62${digits.slice(1)}`;
+  if (digits.startsWith("8")) return `62${digits}`;
   return digits;
+}
+
+function validateWaNumber(phone: string): string | undefined {
+  if (!/^\d{8,15}$/.test(phone)) {
+    return "Nomor WhatsApp harus berisi 8-15 digit dengan kode negara, contoh 628123456789.";
+  }
+  if (phone.startsWith("62") && !phone.startsWith("628")) {
+    return "Nomor Indonesia untuk WhatsApp biasanya diawali 628. Periksa kembali nomor tujuan.";
+  }
+  return undefined;
 }
 
 export function preferredWaNumber(account: Account): string {
@@ -155,25 +178,50 @@ async function sendViaStarsender(settings: WhatsAppSettings, input: SendInput): 
   if (!apiKey) throw new Error("Starsender API key belum diisi.");
 
   const baseUrl = settings.starsenderBaseUrl || process.env.STARSENDER_BASE_URL || "https://api.starsender.online/api";
-  const response = await fetch(`${baseUrl.replace(/\/$/, "")}/send`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: apiKey
-    },
-    body: JSON.stringify({
-      messageType: "text",
-      to: input.to,
-      body: input.body,
-      delay: 3
-    })
-  });
-  const raw = await response.json().catch(async () => ({ text: await response.text() }));
-  if (!response.ok || raw?.success === false) {
-    throw new Error(raw?.message ?? `Starsender gagal mengirim pesan (${response.status}).`);
+  let response: Response;
+  try {
+    response = await fetch(`${baseUrl.replace(/\/$/, "")}/send`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: apiKey
+      },
+      body: JSON.stringify({
+        messageType: "text",
+        to: input.to,
+        body: input.body,
+        delay: 3
+      }),
+      signal: AbortSignal.timeout(15000)
+    });
+  } catch (error) {
+    const timedOut = error instanceof Error && error.name === "TimeoutError";
+    throw new WhatsAppProviderError(
+      timedOut
+        ? "Starsender tidak merespons dalam 15 detik. Periksa koneksi dan status device."
+        : "Tidak dapat terhubung ke Starsender. Periksa koneksi, Base URL, dan status device."
+    );
   }
+  const responseText = await response.text();
+  let raw: any;
+  try {
+    raw = responseText ? JSON.parse(responseText) : {};
+  } catch {
+    raw = { text: responseText };
+  }
+  if (!response.ok || raw?.success === false) {
+    throw new WhatsAppProviderError(
+      raw?.message ?? `Starsender menolak pesan (${response.status}).`,
+      raw
+    );
+  }
+  const providerMessageId = raw?.data?.message_id ?? raw?.data?.id;
   return {
-    externalId: raw?.data?.id ? String(raw.data.id) : undefined,
+    externalId: providerMessageId ? String(providerMessageId) : undefined,
+    status: "queued",
+    statusMessage: providerMessageId
+      ? `Diterima gateway Starsender dengan message ID ${providerMessageId}. Delivery ke WhatsApp belum dikonfirmasi.`
+      : "Diterima gateway Starsender. Delivery ke WhatsApp belum dikonfirmasi.",
     raw
   };
 }
@@ -189,6 +237,8 @@ async function sendViaProvider(settings: WhatsAppSettings, input: SendInput): Pr
 
   return {
     externalId: `mock-${Date.now()}`,
+    status: "sent",
+    statusMessage: "Pesan mock tersimpan lokal.",
     raw: { success: true, message: "Mock WhatsApp message recorded locally." }
   };
 }
@@ -206,13 +256,15 @@ export async function sendWhatsAppMessage(input: SendInput): Promise<WhatsAppMes
     to,
     body: input.body,
     direction: "outbound",
-    status: "sent",
+    status: "queued",
     provider: settings.provider,
     signal: "cold",
     createdAt
   };
 
   try {
+    const validationError = validateWaNumber(to);
+    if (validationError) throw new WhatsAppProviderError(validationError);
     const sent = await sendViaProvider(settings, { ...input, to });
     const message = { ...messageBase, ...sent };
     updateDb((db) => {
@@ -231,7 +283,8 @@ export async function sendWhatsAppMessage(input: SendInput): Promise<WhatsAppMes
     const message = {
       ...messageBase,
       status: "failed" as const,
-      error: error instanceof Error ? error.message : "Gagal mengirim WhatsApp."
+      error: error instanceof Error ? error.message : "Gagal mengirim WhatsApp.",
+      raw: error instanceof WhatsAppProviderError ? error.raw : undefined
     };
     updateDb((db) => {
       db.whatsappMessages.unshift(message);
@@ -261,13 +314,15 @@ export async function sendWhatsAppToContact(input: SendContactInput): Promise<Wh
     to,
     body: input.body,
     direction: "outbound",
-    status: "sent",
+    status: "queued",
     provider: settings.provider,
     signal: input.signal ?? "cold",
     createdAt
   };
 
   try {
+    const validationError = validateWaNumber(to);
+    if (validationError) throw new WhatsAppProviderError(validationError);
     const sent = await sendViaProvider(settings, { account: account ?? ({
       id: input.accountId ?? "",
       name: input.contactName ?? contact?.name ?? to,
@@ -301,7 +356,8 @@ export async function sendWhatsAppToContact(input: SendContactInput): Promise<Wh
     const message = {
       ...messageBase,
       status: "failed" as const,
-      error: error instanceof Error ? error.message : "Gagal mengirim WhatsApp."
+      error: error instanceof Error ? error.message : "Gagal mengirim WhatsApp.",
+      raw: error instanceof WhatsAppProviderError ? error.raw : undefined
     };
     updateDb((nextDb) => {
       nextDb.whatsappMessages.unshift(message);
@@ -309,6 +365,81 @@ export async function sendWhatsAppToContact(input: SendContactInput): Promise<Wh
     upsertContact({ phone: to, name: input.contactName || contact?.name || account?.name, accountId: account?.id, signal: input.signal ?? "cold", createdAt });
     return message;
   }
+}
+
+function mapStarsenderStatus(value?: string): WhatsAppMessage["status"] | undefined {
+  const normalized = value?.toLowerCase().replace(/[\s-]+/g, "_");
+  if (!normalized) return undefined;
+  if (normalized.includes("read")) return "read";
+  if (normalized.includes("deliver")) return "delivered";
+  if (normalized === "sent" || normalized.includes("success")) return "sent";
+  if (normalized.includes("fail") || normalized.includes("reject") || normalized.includes("error")) return "failed";
+  if (normalized.includes("queue") || normalized.includes("pending") || normalized.includes("process")) return "queued";
+  return undefined;
+}
+
+export async function refreshWhatsAppMessageStatus(messageId: string): Promise<WhatsAppMessage> {
+  const db = readDb();
+  const message = db.whatsappMessages.find((item) => item.id === messageId);
+  if (!message) throw new Error("Pesan WhatsApp tidak ditemukan.");
+  if (message.provider !== "starsender") throw new Error("Status provider ini tidak perlu diperiksa ke Starsender.");
+  if (!message.externalId) throw new Error("Pesan ini tidak memiliki Starsender message ID.");
+
+  const apiKey = db.whatsappSettings.starsenderAccountApiKey || process.env.STARSENDER_ACCOUNT_API_KEY;
+  if (!apiKey) {
+    throw new Error("Starsender Account API Key belum diisi. Device API Key hanya dapat mengirim pesan, bukan memeriksa delivery.");
+  }
+
+  const baseUrl = db.whatsappSettings.starsenderBaseUrl || process.env.STARSENDER_BASE_URL || "https://api.starsender.online/api";
+  let response: Response;
+  try {
+    response = await fetch(`${baseUrl.replace(/\/$/, "")}/messages/${message.externalId}`, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: apiKey
+      },
+      signal: AbortSignal.timeout(15000)
+    });
+  } catch (error) {
+    const timedOut = error instanceof Error && error.name === "TimeoutError";
+    throw new WhatsAppProviderError(
+      timedOut
+        ? "Pemeriksaan status Starsender timeout setelah 15 detik."
+        : "Tidak dapat terhubung ke Starsender untuk memeriksa status."
+    );
+  }
+  const responseText = await response.text();
+  let raw: any;
+  try {
+    raw = responseText ? JSON.parse(responseText) : {};
+  } catch {
+    raw = { text: responseText };
+  }
+  if (!response.ok || raw?.success === false) {
+    throw new WhatsAppProviderError(
+      raw?.message ?? `Gagal memeriksa status Starsender (${response.status}).`,
+      raw
+    );
+  }
+
+  const data = raw?.data ?? {};
+  const providerStatus = firstString(data.status, data.message_status, data.delivery_status, raw?.status);
+  const nextStatus = mapStarsenderStatus(providerStatus) ?? message.status;
+  const checkedAt = new Date().toISOString();
+  let updated = message;
+  updateDb((nextDb) => {
+    const target = nextDb.whatsappMessages.find((item) => item.id === messageId);
+    if (!target) return;
+    target.status = nextStatus;
+    target.statusCheckedAt = checkedAt;
+    target.statusMessage = providerStatus
+      ? `Status Starsender: ${providerStatus}.`
+      : raw?.message ?? "Status diperiksa, tetapi provider belum memberi detail delivery.";
+    target.error = nextStatus === "failed" ? target.statusMessage : undefined;
+    target.raw = { send: target.raw, statusCheck: raw };
+    updated = target;
+  });
+  return updated;
 }
 
 export function recordInboundWhatsApp(input: {
@@ -546,7 +677,7 @@ export async function sendWhatsAppFollowUp(taskId: string): Promise<WhatsAppFoll
   updateDb((db) => {
     const nextTask = db.whatsappFollowUps.find((item) => item.id === taskId);
     if (!nextTask) return;
-    nextTask.status = sent.status === "failed" ? "failed" : "sent";
+    nextTask.status = sent.status === "failed" ? "failed" : sent.status === "queued" ? "queued" : "sent";
     nextTask.sentMessageId = sent.id;
     nextTask.error = sent.error;
     nextTask.updatedAt = new Date().toISOString();

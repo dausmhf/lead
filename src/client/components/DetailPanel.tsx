@@ -156,10 +156,12 @@ export default function DetailPanel({
       await onAfterWhatsAppSend?.();
       if (!response.ok) {
         setOperationMsg(payload.error ?? "WhatsApp gagal dikirim.");
+      } else if (payload.status === "queued") {
+        setOperationMsg(`Pesan diterima Starsender${payload.externalId ? ` (ID ${payload.externalId})` : ""}. Delivery ke WhatsApp belum terkonfirmasi.`);
       } else {
         setOperationMsg("Pesan WhatsApp berhasil dikirim dan stage dipindah ke Chat Admin.");
       }
-      setTimeout(() => setOperationMsg(null), 3500);
+      setTimeout(() => setOperationMsg(null), 6000);
     } catch (error) {
       setOperationMsg(error instanceof Error ? error.message : "WhatsApp gagal dikirim.");
     } finally {
@@ -265,6 +267,7 @@ export default function DetailPanel({
                   <span>{message.status} · {message.signal}</span>
                 </div>
                 <p>{message.body}</p>
+                {message.statusMessage && <small className="waStatusMessage">{message.statusMessage}</small>}
                 {message.error && <small>{message.error}</small>}
               </div>
             ))}

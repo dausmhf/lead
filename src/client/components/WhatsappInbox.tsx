@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { CalendarClock, Link2, MessageCircle, Plus, RefreshCw, Save, Send, ShieldCheck } from "lucide-react";
+import { AlertCircle, CalendarClock, CheckCheck, Clock3, Link2, MessageCircle, Plus, RefreshCw, Save, Send, ShieldCheck } from "lucide-react";
 import type { Account, WhatsAppContact, WhatsAppFollowUpTask, WhatsAppLeadSignal, WhatsAppMessage, WhatsAppTemplate } from "../../shared/types";
 
 interface InboxContact extends WhatsAppContact {
@@ -31,6 +31,15 @@ function formatTime(value?: string) {
     dateStyle: "medium",
     timeStyle: "short"
   }).format(new Date(value));
+}
+
+function deliveryLabel(message: WhatsAppMessage) {
+  if (message.status === "queued") return "Diterima gateway";
+  if (message.status === "sent") return "Terkirim";
+  if (message.status === "delivered") return "Sampai";
+  if (message.status === "read") return "Dibaca";
+  if (message.status === "failed") return "Gagal";
+  return message.status;
 }
 
 export default function WhatsappInbox({
@@ -183,8 +192,32 @@ export default function WhatsappInbox({
       await loadInbox(selectedContact.phone);
       await onDataChanged();
       setReplyText("");
-      setStatus(response.ok ? "Balasan WhatsApp terkirim." : payload.error ?? "Gagal mengirim balasan.");
-      setTimeout(() => setStatus(""), 3000);
+      if (!response.ok || payload.status === "failed") {
+        setStatus(payload.error ?? "Gagal mengirim balasan.");
+      } else if (payload.status === "queued") {
+        setStatus(`Pesan diterima Starsender${payload.externalId ? ` (ID ${payload.externalId})` : ""}, tetapi delivery ke WhatsApp belum terkonfirmasi.`);
+      } else {
+        setStatus("Balasan WhatsApp terkirim.");
+      }
+      setTimeout(() => setStatus(""), 6000);
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : "Gagal mengirim balasan.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function checkDelivery(message: WhatsAppMessage) {
+    setBusy(true);
+    try {
+      const response = await apiFetch(`/api/whatsapp/messages/${message.id}/status`, { method: "POST" });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error ?? "Gagal memeriksa delivery.");
+      await selectContact(selectedPhone);
+      setStatus(payload.statusMessage ?? `Status pesan: ${deliveryLabel(payload)}.`);
+      setTimeout(() => setStatus(""), 6000);
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : "Gagal memeriksa delivery.");
     } finally {
       setBusy(false);
     }
@@ -252,8 +285,14 @@ export default function WhatsappInbox({
       const payload = await response.json();
       await reloadFollowUps();
       if (selectedPhone) await selectContact(selectedPhone);
-      setStatus(response.ok ? "Follow-up terkirim." : payload.error ?? "Follow-up gagal dikirim.");
-      setTimeout(() => setStatus(""), 3000);
+      setStatus(
+        !response.ok
+          ? payload.error ?? "Follow-up gagal dikirim."
+          : payload.status === "queued"
+            ? "Follow-up diterima gateway Starsender, delivery belum terkonfirmasi."
+            : "Follow-up terkirim."
+      );
+      setTimeout(() => setStatus(""), 6000);
     } finally {
       setBusy(false);
     }
@@ -317,10 +356,23 @@ export default function WhatsappInbox({
                   <div key={message.id} className={`waBubble ${message.direction}`}>
                     <div>
                       <strong>{message.direction === "outbound" ? "Daus" : selectedContact.name || selectedContact.phone}</strong>
-                      <span>{message.signal} - {formatTime(message.createdAt)}</span>
+                      <span>{formatTime(message.createdAt)}</span>
                     </div>
                     <p>{message.body}</p>
-                    {message.error && <small>{message.error}</small>}
+                    <div className="waDeliveryRow">
+                      <span className={`waDeliveryStatus ${message.status}`}>
+                        {message.status === "failed" ? <AlertCircle size={12} /> : message.status === "queued" ? <Clock3 size={12} /> : <CheckCheck size={12} />}
+                        {message.direction === "inbound" ? message.signal : deliveryLabel(message)}
+                      </span>
+                      {message.externalId && <span>ID {message.externalId}</span>}
+                      {message.direction === "outbound" && message.provider === "starsender" && message.externalId && (
+                        <button type="button" title="Cek status delivery" onClick={() => checkDelivery(message)} disabled={busy}>
+                          <RefreshCw size={12} />
+                        </button>
+                      )}
+                    </div>
+                    {message.statusMessage && <small className="waStatusMessage">{message.statusMessage}</small>}
+                    {message.error && <small className="waErrorMessage">{message.error}</small>}
                   </div>
                 ))}
               </div>

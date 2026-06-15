@@ -81,14 +81,32 @@ function normalizeDatabase(db: Partial<CrmDatabase>): CrmDatabase {
       ...base.whatsappSettings,
       ...(db.whatsappSettings ?? {}),
       starsenderApiKey: db.whatsappSettings?.starsenderApiKey ?? process.env.STARSENDER_API_KEY ?? "",
+      starsenderAccountApiKey: db.whatsappSettings?.starsenderAccountApiKey ?? process.env.STARSENDER_ACCOUNT_API_KEY ?? "",
       wabaAccessToken: db.whatsappSettings?.wabaAccessToken ?? process.env.WABA_ACCESS_TOKEN ?? "",
       wabaPhoneNumberId: db.whatsappSettings?.wabaPhoneNumberId ?? process.env.WABA_PHONE_NUMBER_ID ?? ""
     },
     whatsappContacts: db.whatsappContacts ?? base.whatsappContacts,
-    whatsappMessages: (db.whatsappMessages ?? base.whatsappMessages).map((message) => ({
-      ...message,
-      contactPhone: message.contactPhone ?? message.from ?? message.to
-    })),
+    whatsappMessages: (db.whatsappMessages ?? base.whatsappMessages).map((message) => {
+      const raw = message.raw as { data?: { id?: string | number; message_id?: string | number }; message?: string } | undefined;
+      const providerMessageId = raw?.data?.message_id ?? raw?.data?.id;
+      const externalId = message.externalId ?? (providerMessageId ? String(providerMessageId) : undefined);
+      const isUnconfirmedStarsenderMessage =
+        message.provider === "starsender" &&
+        message.direction === "outbound" &&
+        message.status === "sent";
+
+      return {
+        ...message,
+        contactPhone: message.contactPhone ?? message.from ?? message.to,
+        externalId,
+        status: isUnconfirmedStarsenderMessage ? "queued" as const : message.status,
+        statusMessage: message.statusMessage ?? (
+          isUnconfirmedStarsenderMessage
+            ? "Diterima gateway Starsender. Delivery ke WhatsApp belum dikonfirmasi."
+            : raw?.message
+        )
+      };
+    }),
     whatsappTemplates: db.whatsappTemplates?.length ? db.whatsappTemplates : base.whatsappTemplates,
     whatsappFollowUps: db.whatsappFollowUps ?? base.whatsappFollowUps
   };

@@ -154,6 +154,7 @@ export interface WhatsAppSettings {
   provider: WhatsAppProvider;
   enabled: boolean;
   starsenderApiKey?: string;
+  starsenderAccountApiKey?: string;
   starsenderBaseUrl?: string;
   wabaAccessToken?: string;
   wabaPhoneNumberId?: string;
@@ -186,12 +187,14 @@ export interface WhatsAppMessage {
   provider: WhatsAppProvider;
   signal: WhatsAppLeadSignal;
   externalId?: string;
+  statusMessage?: string;
+  statusCheckedAt?: string;
   error?: string;
   raw?: unknown;
   createdAt: string;
 }
 
-export type WhatsAppFollowUpStatus = "pending" | "sent" | "skipped" | "failed";
+export type WhatsAppFollowUpStatus = "pending" | "queued" | "sent" | "skipped" | "failed";
 
 export interface WhatsAppTemplate {
   id: string;

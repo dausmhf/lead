@@ -228,6 +228,15 @@ pushLeads();`;
               placeholder="Authorization key dari menu Device"
             />
           </label>
+          <label>
+            Starsender Account API Key
+            <input
+              type="password"
+              value={waSettings.starsenderAccountApiKey ?? ""}
+              onChange={(event) => setWaSettings({ ...waSettings, starsenderAccountApiKey: event.target.value })}
+              placeholder="Opsional, untuk cek status delivery"
+            />
+          </label>
         </div>
 
         <div className="waSettingsActions">
