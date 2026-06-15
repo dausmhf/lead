@@ -273,10 +273,22 @@ function App() {
     }
   }, [activeTab]);
 
-  function openWhatsappInbox(phone: string) {
-    const normalizedPhone = phone.replace(/\D/g, "");
+  function openWhatsappInbox(account: Account, contactType: "owner" | "brand") {
+    const phone = contactType === "owner" ? account.ownerPhone : account.phone;
+    const normalizedPhone = (phone || "").replace(/\D/g, "");
     if (!normalizedPhone) return;
-    window.sessionStorage.setItem(whatsappTargetStorageKey, normalizedPhone);
+    const contactName = contactType === "owner"
+      ? account.ownerName || account.decisionMaker || `Owner ${account.name}`
+      : `Admin ${account.name}`;
+    const greeting = contactType === "owner"
+      ? `Halo Kak ${contactName}, saya Daus. Saya ingin menghubungi terkait peluang kolaborasi untuk ${account.name}. Apakah berkenan jika saya jelaskan secara singkat?`
+      : `Halo Kak Admin ${account.name}, saya Daus. Saya ingin menghubungi terkait peluang kolaborasi dengan ${account.name}. Boleh dibantu diarahkan ke PIC marketing atau management yang menangani kerja sama?`;
+    window.sessionStorage.setItem(whatsappTargetStorageKey, JSON.stringify({
+      phone: normalizedPhone,
+      accountId: account.id,
+      name: contactName,
+      draft: greeting
+    }));
     setSelectedAccount(null);
     setActiveTab("whatsapp");
   }

@@ -84,7 +84,7 @@ interface LeadsSearchProps {
   onDeleteAccount: (id: string) => void;
   onBulkUpdate: (fields: Partial<Account>) => void;
   onBulkDelete: () => void;
-  onOpenWhatsapp: (phone: string) => void;
+  onOpenWhatsapp: (account: Account, contactType: "owner" | "brand") => void;
   activeView: string;
   setActiveView: (view: string) => void;
 }
@@ -437,7 +437,7 @@ export default function LeadsSearch({
                       <ChannelLink
                         href={ownerWhatsapp}
                         title="Buka WhatsApp Owner di Inbox"
-                        onClick={() => onOpenWhatsapp(account.ownerPhone || "")}
+                        onClick={() => onOpenWhatsapp(account, "owner")}
                       >
                         <MessageCircle size={15} />
                       </ChannelLink>
@@ -453,7 +453,7 @@ export default function LeadsSearch({
                       <ChannelLink
                         href={brandWhatsapp}
                         title="Buka WhatsApp Admin Brand di Inbox"
-                        onClick={() => onOpenWhatsapp(account.phone || "")}
+                        onClick={() => onOpenWhatsapp(account, "brand")}
                       >
                         <MessageCircle size={15} />
                       </ChannelLink>

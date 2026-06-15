@@ -79,6 +79,13 @@ function normalizePhone(value?: string) {
 
 const whatsappTargetStorageKey = "lead-website.whatsappTarget";
 
+interface WhatsAppInboxTarget {
+  phone: string;
+  accountId?: string;
+  name?: string;
+  draft?: string;
+}
+
 export default function WhatsappInbox({
   accounts,
   apiFetch,
@@ -171,17 +178,34 @@ export default function WhatsappInbox({
     return () => window.clearInterval(interval);
   }, []);
 
-  async function loadInbox(preferredPhone = selectedPhone) {
+  async function loadInbox(preferredPhone = selectedPhone, target?: WhatsAppInboxTarget) {
     const response = await apiFetch("/api/whatsapp/inbox");
     if (!response.ok) return;
     const payload = await response.json();
-    const nextContacts = payload.contacts ?? [];
-    setContacts(nextContacts);
+    const nextContacts: InboxContact[] = payload.contacts ?? [];
     const normalizedPreferredPhone = normalizePhone(preferredPhone);
     const matchingContact = nextContacts.find(
       (contact: InboxContact) => normalizePhone(contact.phone) === normalizedPreferredPhone
     );
-    const phone = matchingContact?.phone || preferredPhone || nextContacts[0]?.phone || "";
+    const linkedAccount = target?.accountId
+      ? accounts.find((account) => account.id === target.accountId)
+      : undefined;
+    const virtualContact: InboxContact | undefined = !matchingContact && normalizedPreferredPhone
+      ? {
+          id: `draft-${normalizedPreferredPhone}`,
+          phone: normalizedPreferredPhone,
+          name: target?.name || linkedAccount?.name || normalizedPreferredPhone,
+          accountId: target?.accountId,
+          account: linkedAccount,
+          classification: "unknown",
+          status: target?.accountId ? "linked" : "new",
+          unreadCount: 0,
+          createdAt: new Date().toISOString()
+        }
+      : undefined;
+    const contactsWithTarget = virtualContact ? [virtualContact, ...nextContacts] : nextContacts;
+    setContacts(contactsWithTarget);
+    const phone = matchingContact?.phone || virtualContact?.phone || preferredPhone || nextContacts[0]?.phone || "";
     setSelectedPhone(phone);
     if (phone) {
       const messagesRes = await apiFetch(`/api/whatsapp/messages/by-phone/${phone}`);
@@ -193,9 +217,21 @@ export default function WhatsappInbox({
 
   useEffect(() => {
     async function loadBase() {
-      const preferredPhone = window.sessionStorage.getItem(whatsappTargetStorageKey) || "";
+      const storedTarget = window.sessionStorage.getItem(whatsappTargetStorageKey) || "";
       window.sessionStorage.removeItem(whatsappTargetStorageKey);
-      await loadInbox(preferredPhone);
+      let target: WhatsAppInboxTarget | undefined;
+      if (storedTarget) {
+        try {
+          target = JSON.parse(storedTarget) as WhatsAppInboxTarget;
+        } catch {
+          target = { phone: storedTarget };
+        }
+      }
+      await loadInbox(target?.phone || "", target);
+      if (target?.draft) {
+        setReplyText(target.draft);
+        window.setTimeout(() => replyInputRef.current?.focus(), 0);
+      }
       const [templatesRes, followUpsRes] = await Promise.all([
         apiFetch("/api/whatsapp/templates"),
         apiFetch("/api/whatsapp/follow-ups")
