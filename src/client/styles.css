@@ -2257,9 +2257,13 @@ body, .leadApp, .leadMain, .crmDashboardPage, .leadsSearchSection, .settingsPage
 .waSearchWrapper {
   padding: 16px;
   border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  gap: 8px;
 }
 
 .waSearchWrapper input {
+  min-width: 0;
+  flex: 1;
   width: 100%;
   padding: 8px 12px;
   border: 1px solid #e2e8f0;
@@ -2273,6 +2277,11 @@ body, .leadApp, .leadMain, .crmDashboardPage, .leadsSearchSection, .settingsPage
 .waSearchWrapper input:focus {
   border-color: #009b77;
   background: #ffffff;
+}
+
+.waMobileRefreshBtn,
+.waMobileBackBtn {
+  display: none;
 }
 
 .waContactList {
@@ -2745,4 +2754,122 @@ body, .leadApp, .leadMain, .crmDashboardPage, .leadsSearchSection, .settingsPage
 
 .waInboxEmptyState p {
   margin: 6px 0 0;
+}
+
+@media (max-width: 1360px) {
+  .waInboxContainer {
+    grid-template-columns: 200px 280px minmax(0, 1fr);
+  }
+
+  .waNavSidebar {
+    padding: 20px 12px;
+  }
+
+  .waScreeningSidebar {
+    position: absolute;
+    inset: 0 0 0 auto;
+    width: min(320px, 100%);
+    z-index: 15;
+    box-shadow: -12px 0 30px rgba(15, 23, 42, 0.12);
+  }
+}
+
+@media (max-width: 860px) {
+  .waInboxContainer {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .waNavSidebar {
+    display: none;
+  }
+
+  .waMiddlePanel,
+  .waRightConversationPanel {
+    grid-column: 1;
+    grid-row: 1;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .waRightConversationPanel,
+  .waInboxContainer.hasSelection .waMiddlePanel {
+    display: none;
+  }
+
+  .waInboxContainer.hasSelection .waRightConversationPanel {
+    display: flex;
+  }
+
+  .waMobileRefreshBtn {
+    width: 36px;
+    height: 36px;
+    flex: 0 0 36px;
+    display: inline-grid;
+    place-items: center;
+    border: 1px solid #d1fae5;
+    border-radius: 8px;
+    background: #ecfdf5;
+    color: #047857;
+    cursor: pointer;
+  }
+
+  .waMobileBackBtn {
+    width: 32px;
+    height: 32px;
+    display: inline-grid;
+    place-items: center;
+    float: left;
+    margin-right: 8px;
+    border: 1px solid #e2e8f0;
+    border-radius: 7px;
+    background: #ffffff;
+    color: #475569;
+    cursor: pointer;
+  }
+
+  .waChatHeader {
+    padding: 12px 14px;
+  }
+
+  .waChatHeaderActions {
+    flex-shrink: 0;
+  }
+
+  .waChatHeaderActions .ghostBtn {
+    width: 34px;
+    padding: 0;
+    font-size: 0 !important;
+  }
+
+  .waChatMessages {
+    padding: 14px;
+  }
+
+  .waMessageBubble {
+    max-width: 88%;
+  }
+
+  .waComposerBox {
+    padding: 12px 14px;
+  }
+
+  .waComposerActions {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .waComposerFormatting {
+    width: 100%;
+  }
+
+  .waComposerFormatting select {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .waComposerSendBtn {
+    justify-content: center;
+    width: 100%;
+  }
 }

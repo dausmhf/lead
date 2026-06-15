@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { AlertCircle, CalendarClock, CheckCheck, Clock3, Link2, MessageCircle, Plus, RefreshCw, Save, Send, ShieldCheck, User, MapPin, Bold, Italic, Underline, Paperclip, ChevronRight, Search } from "lucide-react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { AlertCircle, ArrowLeft, Bold, CalendarClock, CheckCheck, Clock3, Italic, Link2, MessageCircle, Plus, RefreshCw, Save, Send, ShieldCheck } from "lucide-react";
 import type { Account, WhatsAppContact, WhatsAppFollowUpTask, WhatsAppLeadSignal, WhatsAppMessage, WhatsAppTemplate } from "../../shared/types";
 
 interface InboxContact extends WhatsAppContact {
@@ -82,11 +82,14 @@ export default function WhatsappInbox({
   const [followUpAt, setFollowUpAt] = useState("");
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState("");
+  const replyInputRef = useRef<HTMLTextAreaElement>(null);
 
   // New visual state
   const [searchTerm, setSearchTerm] = useState("");
   const [activeClassificationFilter, setActiveClassificationFilter] = useState("all");
-  const [showScreeningSidebar, setShowScreeningSidebar] = useState(true);
+  const [showScreeningSidebar, setShowScreeningSidebar] = useState(
+    () => typeof window === "undefined" || window.innerWidth > 1360
+  );
 
   const selectedContact = useMemo(
     () => contacts.find((contact) => contact.phone === selectedPhone),
@@ -333,11 +336,26 @@ export default function WhatsappInbox({
     }
   }
 
+  function formatReply(prefix: string, suffix = prefix) {
+    const input = replyInputRef.current;
+    if (!input) return;
+    const start = input.selectionStart;
+    const end = input.selectionEnd;
+    const selected = replyText.slice(start, end);
+    const replacement = `${prefix}${selected || "teks"}${suffix}`;
+    setReplyText(`${replyText.slice(0, start)}${replacement}${replyText.slice(end)}`);
+    requestAnimationFrame(() => {
+      input.focus();
+      const selectionStart = start + prefix.length;
+      input.setSelectionRange(selectionStart, selectionStart + (selected || "teks").length);
+    });
+  }
+
   return (
     <section className="waInboxPage">
       {status && <div className="operationAlert">{status}</div>}
 
-      <div className="waInboxContainer">
+      <div className={`waInboxContainer ${selectedContact ? "hasSelection" : ""}`}>
         {/* Column 1: Navigation Sidebar */}
         <aside className="waNavSidebar">
           <div className="waNavHeader">
@@ -412,6 +430,9 @@ export default function WhatsappInbox({
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
+            <button className="waMobileRefreshBtn" type="button" title="Ambil chat terbaru" onClick={refreshInbox} disabled={busy}>
+              <RefreshCw size={15} />
+            </button>
           </div>
 
           <div className="waContactList">
@@ -460,6 +481,9 @@ export default function WhatsappInbox({
             <main className="waChatArea">
               <div className="waChatHeader">
                 <div>
+                  <button className="waMobileBackBtn" type="button" title="Kembali ke daftar kontak" onClick={() => setSelectedPhone("")}>
+                    <ArrowLeft size={16} />
+                  </button>
                   <h3>{selectedContact.name || selectedContact.account?.name || selectedContact.phone}</h3>
                   <p>{selectedContact.phone} — {selectedContact.status || "Aktif"} (Terakhir {formatTime(selectedContact.lastMessageAt)})</p>
                 </div>
@@ -547,16 +571,15 @@ export default function WhatsappInbox({
               {/* Composer Box */}
               <div className="waComposerBox">
                 <textarea
+                  ref={replyInputRef}
                   value={replyText}
                   onChange={(event) => setReplyText(event.target.value)}
                   placeholder="Tulis balasan WhatsApp atau pilih template di bawah..."
                 />
                 <div className="waComposerActions">
                   <div className="waComposerFormatting">
-                    <button type="button" title="Bold"><Bold size={14} /></button>
-                    <button type="button" title="Italic"><Italic size={14} /></button>
-                    <button type="button" title="Underline"><Underline size={14} /></button>
-                    <button type="button" title="Attach file"><Paperclip size={14} /></button>
+                    <button type="button" title="Tebal" onClick={() => formatReply("*")}><Bold size={14} /></button>
+                    <button type="button" title="Miring" onClick={() => formatReply("_")}><Italic size={14} /></button>
 
                     <span style={{ margin: "0 4px", borderRight: "1px solid #e2e8f0", height: "16px" }} />
 
