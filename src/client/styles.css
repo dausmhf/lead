@@ -2104,7 +2104,10 @@ body, .leadApp, .leadMain, .crmDashboardPage, .leadsSearchSection, .settingsPage
 
 /* Root Layout for WA */
 .waInboxPage {
+  flex: 1 1 auto;
   height: 100%;
+  min-width: 0;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   background: #f8fafc;
@@ -2112,10 +2115,14 @@ body, .leadApp, .leadMain, .crmDashboardPage, .leadsSearchSection, .settingsPage
 }
 
 .waInboxContainer {
+  flex: 1 1 auto;
   display: grid;
   grid-template-columns: 240px 320px 1fr;
-  height: 100%;
+  width: 100%;
+  height: 0;
+  min-width: 0;
   min-height: 0;
+  overflow: hidden;
   background: #f8fafc;
 }
 
@@ -2125,9 +2132,12 @@ body, .leadApp, .leadMain, .crmDashboardPage, .leadsSearchSection, .settingsPage
   border-right: 1px solid #e2e8f0;
   display: flex;
   flex-direction: column;
+  min-height: 0;
   padding: 24px 16px;
   gap: 24px;
   flex-shrink: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .waNavSidebar .composeBtn {
@@ -2277,6 +2287,8 @@ body, .leadApp, .leadMain, .crmDashboardPage, .leadsSearchSection, .settingsPage
   border-right: 1px solid #e2e8f0;
   display: flex;
   flex-direction: column;
+  min-width: 0;
+  min-height: 0;
   overflow: hidden;
   flex-shrink: 0;
 }
@@ -2313,10 +2325,13 @@ body, .leadApp, .leadMain, .crmDashboardPage, .leadsSearchSection, .settingsPage
 
 .waContactList {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
   align-content: start;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
 }
 
 .waContactItem {
@@ -2427,6 +2442,8 @@ body, .leadApp, .leadMain, .crmDashboardPage, .leadsSearchSection, .settingsPage
   display: flex;
   flex: 1;
   min-width: 0;
+  min-height: 0;
+  overflow: hidden;
   background: #f8fafc;
   position: relative;
 }
@@ -2436,6 +2453,8 @@ body, .leadApp, .leadMain, .crmDashboardPage, .leadsSearchSection, .settingsPage
   display: flex;
   flex-direction: column;
   min-width: 0;
+  min-height: 0;
+  overflow: hidden;
   background: #ffffff;
 }
 
@@ -2471,12 +2490,16 @@ body, .leadApp, .leadMain, .crmDashboardPage, .leadsSearchSection, .settingsPage
 
 .waChatMessages {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   padding: 20px;
   display: flex;
   flex-direction: column;
   gap: 14px;
   background: #f8fafc;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  touch-action: pan-y;
 }
 
 .waMessageBubble {
@@ -2643,6 +2666,7 @@ body, .leadApp, .leadMain, .crmDashboardPage, .leadsSearchSection, .settingsPage
 /* Column 4: Collapsible Screening Sidebar */
 .waScreeningSidebar {
   width: 320px;
+  min-height: 0;
   background: #ffffff;
   border-left: 1px solid #e2e8f0;
   overflow-y: auto;
@@ -2651,6 +2675,8 @@ body, .leadApp, .leadMain, .crmDashboardPage, .leadsSearchSection, .settingsPage
   flex-direction: column;
   gap: 20px;
   flex-shrink: 0;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
 }
 
 .waScreeningSidebar h3 {
