@@ -136,6 +136,7 @@ const rupiah = new Intl.NumberFormat("id-ID", {
 const navTabs = ["dashboard", "deals", "leads", "whatsapp", "schedule", "settings"] as const;
 type NavTab = typeof navTabs[number];
 const activeTabStorageKey = "lead-website.activeTab";
+const whatsappTargetStorageKey = "lead-website.whatsappTarget";
 
 interface AuthUser {
   email: string;
@@ -271,6 +272,14 @@ function App() {
       window.history.replaceState(null, "", `#${activeTab}`);
     }
   }, [activeTab]);
+
+  function openWhatsappInbox(phone: string) {
+    const normalizedPhone = phone.replace(/\D/g, "");
+    if (!normalizedPhone) return;
+    window.sessionStorage.setItem(whatsappTargetStorageKey, normalizedPhone);
+    setSelectedAccount(null);
+    setActiveTab("whatsapp");
+  }
 
   async function patchAccount(id: string, fields: Partial<Account>) {
     setBusy(true);
@@ -733,6 +742,7 @@ function App() {
             onDeleteAccount={deleteAccount}
             onBulkUpdate={bulkUpdate}
             onBulkDelete={bulkDelete}
+            onOpenWhatsapp={openWhatsappInbox}
             activeView={activeView}
             setActiveView={setActiveView}
           />

@@ -77,6 +77,8 @@ function normalizePhone(value?: string) {
   return digits;
 }
 
+const whatsappTargetStorageKey = "lead-website.whatsappTarget";
+
 export default function WhatsappInbox({
   accounts,
   apiFetch,
@@ -175,7 +177,11 @@ export default function WhatsappInbox({
     const payload = await response.json();
     const nextContacts = payload.contacts ?? [];
     setContacts(nextContacts);
-    const phone = preferredPhone || nextContacts[0]?.phone || "";
+    const normalizedPreferredPhone = normalizePhone(preferredPhone);
+    const matchingContact = nextContacts.find(
+      (contact: InboxContact) => normalizePhone(contact.phone) === normalizedPreferredPhone
+    );
+    const phone = matchingContact?.phone || preferredPhone || nextContacts[0]?.phone || "";
     setSelectedPhone(phone);
     if (phone) {
       const messagesRes = await apiFetch(`/api/whatsapp/messages/by-phone/${phone}`);
@@ -187,7 +193,9 @@ export default function WhatsappInbox({
 
   useEffect(() => {
     async function loadBase() {
-      await loadInbox();
+      const preferredPhone = window.sessionStorage.getItem(whatsappTargetStorageKey) || "";
+      window.sessionStorage.removeItem(whatsappTargetStorageKey);
+      await loadInbox(preferredPhone);
       const [templatesRes, followUpsRes] = await Promise.all([
         apiFetch("/api/whatsapp/templates"),
         apiFetch("/api/whatsapp/follow-ups")

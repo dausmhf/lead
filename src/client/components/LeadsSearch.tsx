@@ -84,6 +84,7 @@ interface LeadsSearchProps {
   onDeleteAccount: (id: string) => void;
   onBulkUpdate: (fields: Partial<Account>) => void;
   onBulkDelete: () => void;
+  onOpenWhatsapp: (phone: string) => void;
   activeView: string;
   setActiveView: (view: string) => void;
 }
@@ -122,10 +123,12 @@ function socialUrl(value?: string, fallbackBase?: string) {
 function ChannelLink({
   href,
   title,
+  onClick,
   children
 }: {
   href?: string;
   title: string;
+  onClick?: () => void;
   children: React.ReactNode;
 }) {
   if (!href) {
@@ -133,6 +136,13 @@ function ChannelLink({
       <span className="channelIcon disabled" title={`${title} belum ada`}>
         {children}
       </span>
+    );
+  }
+  if (onClick) {
+    return (
+      <button className="channelIcon active" type="button" onClick={onClick} title={title}>
+        {children}
+      </button>
     );
   }
   return (
@@ -169,6 +179,7 @@ export default function LeadsSearch({
   onDeleteAccount,
   onBulkUpdate,
   onBulkDelete,
+  onOpenWhatsapp,
   activeView,
   setActiveView
 }: LeadsSearchProps) {
@@ -423,7 +434,13 @@ export default function LeadsSearch({
                   <div className="ownerContactGroup">
                     <span>Owner / PIC</span>
                     <div className="ownerContactRow">
-                      <ChannelLink href={ownerWhatsapp} title="WhatsApp Owner"><MessageCircle size={15} /></ChannelLink>
+                      <ChannelLink
+                        href={ownerWhatsapp}
+                        title="Buka WhatsApp Owner di Inbox"
+                        onClick={() => onOpenWhatsapp(account.ownerPhone || "")}
+                      >
+                        <MessageCircle size={15} />
+                      </ChannelLink>
                       <ChannelLink href={instagramUrl(account.ownerInstagram)} title="Instagram Owner"><Instagram size={15} /></ChannelLink>
                       <ChannelLink href={socialUrl(account.ownerLinkedin, "https://linkedin.com/in/")} title="LinkedIn Owner"><Linkedin size={15} /></ChannelLink>
                       <ChannelLink href={socialUrl(account.ownerFacebook, "https://facebook.com/")} title="Facebook Owner"><Facebook size={15} /></ChannelLink>
@@ -433,7 +450,13 @@ export default function LeadsSearch({
                   <div className="ownerContactGroup brandAudit">
                     <span>Admin Brand · Audit</span>
                     <div className="ownerContactRow">
-                      <ChannelLink href={brandWhatsapp} title="WhatsApp Admin Brand"><MessageCircle size={15} /></ChannelLink>
+                      <ChannelLink
+                        href={brandWhatsapp}
+                        title="Buka WhatsApp Admin Brand di Inbox"
+                        onClick={() => onOpenWhatsapp(account.phone || "")}
+                      >
+                        <MessageCircle size={15} />
+                      </ChannelLink>
                       <ChannelLink href={instagramUrl(account.instagram)} title="Instagram Brand"><Instagram size={15} /></ChannelLink>
                       <ChannelLink href={account.email ? `mailto:${account.email}` : ""} title="Email Brand"><Mail size={15} /></ChannelLink>
                     </div>
