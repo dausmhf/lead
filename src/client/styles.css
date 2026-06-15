@@ -505,7 +505,7 @@ button {
   background: #ffffff;
   border: 1px solid #e2e8f0;
   padding: 14px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   min-width: 0;
   width: 100%;
@@ -807,7 +807,7 @@ button {
   flex: 0 0 auto;
   display: flex;
   flex-direction: column;
-  min-width: 1620px;
+  min-width: 1868px;
   width: max-content;
   overflow: visible;
 }
@@ -819,7 +819,7 @@ button {
   align-items: center;
   gap: 8px;
   padding: 0 16px;
-  min-width: 1620px;
+  min-width: 1868px;
 }
 
 .tableHeader {
@@ -836,7 +836,7 @@ button {
 .leadRows {
   flex: 1;
   overflow: visible;
-  min-width: 1620px;
+  min-width: 1868px;
   background: #ffffff;
 }
 
@@ -1285,6 +1285,7 @@ button {
   from {
     transform: translateX(100%);
   }
+
   to {
     transform: translateX(0);
   }
@@ -1427,6 +1428,7 @@ button {
     transform: scale(0.95);
     opacity: 0;
   }
+
   to {
     transform: scale(1);
     opacity: 1;
@@ -1934,21 +1936,23 @@ button {
 
 /* Media Queries for Responsiveness */
 @media (max-width: 1300px) {
+
   .tableHeader,
   .leadRow {
     grid-template-columns: 24px 24px 280px 150px 230px 126px 196px 260px 164px 174px 128px;
   }
-  
+
   .settingsGrid {
     grid-template-columns: 1fr;
   }
-  
+
   .offersSidebar {
     display: none;
   }
 }
 
 @media (max-width: 1080px) {
+
   .tableHeader,
   .leadRow {
     grid-template-columns: 24px 24px 280px 150px 230px 126px 196px 260px 164px 174px 128px;
@@ -1978,984 +1982,767 @@ button {
   }
 }
 
-/* Daus CRM Dark Theme */
-:root {
-  color: #e5eefb;
-  background: #070b14;
+/* Custom Light Mode Restyling & 3-Column WA Inbox */
+
+/* 1. Global Light mode refinements */
+body, .leadApp, .leadMain, .crmDashboardPage, .leadsSearchSection, .settingsPage, .researchPage, .schedulePage, .dealsPage {
+  background: #f8fafc !important;
+  color: #0f172a !important;
 }
 
-body,
-.leadApp,
-.leadMain,
-.crmDashboardPage,
-.leadsSearchSection,
-.settingsPage,
-.researchPage,
-.schedulePage,
-.dealsPage {
-  background: #070b14 !important;
-  color: #dbe7f6;
-}
-
+/* Sidebar styling overrides */
 .darkSidebar {
-  background: #0b1220;
-  border-right-color: #1f2a44;
-  color: #94a3b8;
+  background: #ffffff !important;
+  border-right-color: #e2e8f0 !important;
+  color: #475569 !important;
 }
 
-.sidebarLogo,
-.sidebarStats,
-.sidebarAuth,
-.topFilterBar,
-.viewTabs,
-.tableHeader,
-.paginationBar,
-.detailHeader {
-  border-color: #1f2a44 !important;
+.sidebarLogo {
+  border-bottom-color: #e2e8f0 !important;
 }
 
-.sidebarLogo h1,
-.pageHeader h2,
-.businessCol strong,
-.ownerNameCol strong,
-.detailHeader h2,
-.manualModal h2,
-.authCard h1,
-.settingsCard h3,
-.offerItemHeader h4 {
-  color: #f8fafc !important;
-}
-
-.sidebarLogo p,
-.pageHeader p,
-.businessCol small,
-.ownerNameCol small,
-.expandedRow p,
-.detailBody label,
-.leadQuickInfo,
-.settingsCard p,
-.offersIntro,
-.sidebarStats span,
-.sidebarAuth span {
-  color: #94a3b8 !important;
-}
-
-.logoMark {
-  background: linear-gradient(135deg, #38bdf8, #22c55e);
-  box-shadow: 0 10px 25px rgba(56, 189, 248, 0.2);
+.sidebarLogo h1 {
+  color: #0f172a !important;
 }
 
 .sidebarMenu button {
-  color: #9ca3af;
+  color: #475569 !important;
 }
 
-.sidebarMenu button:hover,
+.sidebarMenu button:hover {
+  background: #f1f5f9 !important;
+  color: #0f172a !important;
+}
+
 .sidebarMenu button.active {
-  background: #10233a;
-  color: #e0f2fe;
-  border-color: #1d4ed8;
+  background: #f1f5f9 !important;
+  color: #0f172a !important;
+  font-weight: 600 !important;
+  border-left: 3px solid #f97316 !important; /* Orange vertical stripe */
 }
 
-.topFilterBar,
-.leadTablePane,
-.leadRow,
-.expandedRow,
-.sidebarStats,
-.sidebarAuth,
-.detailPanel,
-.manualModal,
-.authCard,
-.settingsCard,
-.offerItem,
-.bulkBar,
-.dealColumn,
-.dealCard,
-.scheduleCard,
-.meetingCard {
-  background: #0f172a !important;
-  border-color: #1f2a44 !important;
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.28) !important;
+/* Leads Table selected row & hover state */
+.leadRow:hover {
+  background: #f8fafc !important;
 }
 
-.leadRow:hover,
-.leadRow.selected,
-.dealCard:hover {
-  background: #111f35 !important;
+.leadRow.selected {
+  background: #fff7ed !important;
+  border-left: 3px solid #f97316 !important;
 }
 
-.tableHeader,
-.viewTabs {
-  background: #0b1220 !important;
-  color: #8ea5c3 !important;
-}
-
-input,
-select,
-textarea,
-.searchInput,
-.dealValueInput,
-.meetingDateInput {
-  background: #0b1220 !important;
-  border-color: #263452 !important;
-  color: #e5eefb !important;
-}
-
-input::placeholder,
-textarea::placeholder {
-  color: #64748b !important;
-}
-
-select option {
-  background: #0b1220;
-  color: #e5eefb;
-}
-
+/* Primary Action Buttons */
 .primaryBtn,
+.createDealBtn,
 .primaryWide,
 .authCard button[type="submit"] {
-  background: linear-gradient(135deg, #0ea5e9, #16a34a) !important;
-  border-color: transparent !important;
+  background: #0f172a !important;
+  color: #ffffff !important;
+  border: 1px solid #0f172a !important;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08) !important;
+  background-image: none !important;
+  font-weight: 600 !important;
+}
+
+.primaryBtn:hover,
+.createDealBtn:hover,
+.primaryWide:hover,
+.authCard button[type="submit"]:hover {
+  background: #1e293b !important;
+  border-color: #1e293b !important;
   color: #ffffff !important;
 }
 
+/* Secondary/Ghost Buttons */
 .ghostBtn,
 .detailsBtn,
 .borderBtn,
 .iconOnly,
 .channelIcon {
-  background: #0b1220 !important;
-  border-color: #263452 !important;
-  color: #bfdbfe !important;
-}
-
-.ghostBtn:hover,
-.detailsBtn:hover,
-.borderBtn:hover,
-.channelIcon.active:hover {
-  background: #10233a !important;
-  border-color: #38bdf8 !important;
-}
-
-.channelIcon.disabled {
+  background: #ffffff !important;
+  border-color: #e2e8f0 !important;
   color: #475569 !important;
-  background: #0a1020 !important;
-  border-color: #1b2740 !important;
-}
-
-.deleteBtn,
-.bulkDeleteBtn {
-  background: #2a1117 !important;
-  border-color: #7f1d1d !important;
-  color: #fecaca !important;
-}
-
-.panelBackdrop,
-.modalBackdrop {
-  background: rgba(2, 6, 23, 0.76) !important;
-}
-
-.greenText {
-  color: #34d399 !important;
-}
-
-.blueText {
-  color: #38bdf8 !important;
-}
-
-.statusAlert.success {
-  background: #052e1a !important;
-  border-color: #166534 !important;
-  color: #bbf7d0 !important;
-}
-
-.statusAlert.error,
-.authError {
-  background: #2a1117 !important;
-  border-color: #7f1d1d !important;
-  color: #fecaca !important;
-}
-
-.statusAlert.info,
-.operationAlert {
-  background: #082f49 !important;
-  border-color: #075985 !important;
-  color: #bae6fd !important;
-}
-
-/* Daus near-black theme refinements */
-:root {
-  color: #f4f4f5;
-  background: #111111;
-}
-
-body,
-#root,
-.leadApp,
-.leadMain,
-.crmDashboardPage,
-.leadsSearchSection,
-.settingsPage,
-.researchPage,
-.schedulePage,
-.dealsPage,
-.dealColumns {
-  background: #111111 !important;
-  color: #f4f4f5 !important;
-}
-
-.darkSidebar,
-.topFilterBar,
-.viewTabs,
-.tableHeader,
-.paginationBar,
-.detailHeader,
-.dealsTopbar,
-.dealViewTabs,
-.dealColumnHeader {
-  background: #141414 !important;
-  border-color: #2a2a2a !important;
-}
-
-.sidebarStats,
-.sidebarAuth,
-.leadTablePane,
-.leadRow,
-.expandedRow,
-.detailPanel,
-.manualModal,
-.authCard,
-.settingsCard,
-.offerItem,
-.bulkBar,
-.dealColumn,
-.dealKanbanCard,
-.dealCard,
-.scheduleCard,
-.meetingCard,
-.columnEmptyState {
-  background: #161616 !important;
-  border-color: #2a2a2a !important;
-  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.38) !important;
-}
-
-.leadRow:hover,
-.leadRow.selected,
-.dealKanbanCard:hover,
-.dealCard:hover,
-.dealColumn.drag-over {
-  background: #1d1d1d !important;
-  border-color: #37f29b !important;
-}
-
-.sidebarMenu button:hover,
-.sidebarMenu button.active {
-  background: #17251f !important;
-  color: #f4f4f5 !important;
-  border-color: #37f29b !important;
-}
-
-.logoMark,
-.createDealBtn,
-.primaryBtn,
-.primaryWide,
-.authCard button[type="submit"] {
-  background: linear-gradient(135deg, #37f29b, #20d6c6) !important;
-  color: #07110d !important;
-}
-
-.dealsTitle,
-.dealColumnHeader strong,
-.dealCardTitle strong,
-.dealActivity b,
-.businessCol strong,
-.ownerNameCol strong,
-.sidebarLogo h1,
-.pageHeader h2,
-.manualModal h2,
-.authCard h1,
-.settingsCard h3,
-.offerItemHeader h4 {
-  color: #f4f4f5 !important;
-}
-
-.dealsMoney span,
-.dealColumnHeader span,
-.dealActivity span,
-.dealCardFooter span,
-.sidebarLogo p,
-.pageHeader p,
-.businessCol small,
-.ownerNameCol small,
-.expandedRow p,
-.detailBody label,
-.leadQuickInfo,
-.settingsCard p,
-.offersIntro,
-.sidebarStats span,
-.sidebarAuth span,
-.columnEmptyState {
-  color: #a1a1aa !important;
-}
-
-.dealsMoney strong,
-.greenText {
-  color: #37f29b !important;
-}
-
-.blueText,
-.dealViewTabs button.active {
-  color: #20d6c6 !important;
-}
-
-.dealViewTabs button.active {
-  border-bottom-color: #20d6c6 !important;
-}
-
-input,
-select,
-textarea,
-.searchInput,
-.dealsSearch,
-.dealValueInput,
-.meetingDateInput,
-.ghostBtn,
-.detailsBtn,
-.borderBtn,
-.iconOnly,
-.channelIcon {
-  background: #111111 !important;
-  border-color: #2a2a2a !important;
-  color: #f4f4f5 !important;
-}
-
-input::placeholder,
-textarea::placeholder {
-  color: #737373 !important;
-}
-
-select option {
-  background: #111111 !important;
-  color: #f4f4f5;
 }
 
 .ghostBtn:hover,
 .detailsBtn:hover,
 .borderBtn:hover,
-.iconOnly:hover,
 .channelIcon.active:hover {
-  background: #1d1d1d !important;
-  border-color: #37f29b !important;
+  background: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
 }
 
-.channelIcon.disabled {
-  color: #525252 !important;
-  background: #111111 !important;
-  border-color: #242424 !important;
+/* 2. WA Inbox Layout & Mailbox Theme styles */
+
+/* Root Layout for WA */
+.waInboxPage {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: #f8fafc;
+  overflow: hidden;
 }
 
-.dealCardFooter em {
-  background: #12241d !important;
-  border-color: #235c43 !important;
-  color: #37f29b !important;
-}
-
-.leadApp [style*="background: #ffffff"],
-.leadApp [style*="background:#ffffff"],
-.leadApp [style*="background: rgb(255, 255, 255)"],
-.leadApp [style*="background: #f8fafc"],
-.leadApp [style*="background:#f8fafc"],
-.leadApp [style*="background: rgb(248, 250, 252)"],
-.leadApp [style*="background: #f1f5f9"],
-.leadApp [style*="background:#f1f5f9"],
-.leadApp [style*="background: rgb(241, 245, 249)"],
-.leadApp [style*="background-color: #ffffff"],
-.leadApp [style*="background-color:#ffffff"],
-.leadApp [style*="background-color: rgb(255, 255, 255)"],
-.leadApp [style*="background-color: #f8fafc"],
-.leadApp [style*="background-color:#f8fafc"],
-.leadApp [style*="background-color: rgb(248, 250, 252)"] {
-  background: #161616 !important;
-  border-color: #2a2a2a !important;
-}
-
-.leadApp [style*="color: #0f172a"],
-.leadApp [style*="color:#0f172a"],
-.leadApp [style*="color: rgb(15, 23, 42)"] {
-  color: #f4f4f5 !important;
-}
-
-.leadApp [style*="color: #475569"],
-.leadApp [style*="color:#475569"],
-.leadApp [style*="color: rgb(71, 85, 105)"],
-.leadApp [style*="color: #64748b"],
-.leadApp [style*="color:#64748b"],
-.leadApp [style*="color: rgb(100, 116, 139)"] {
-  color: #a1a1aa !important;
-}
-
-.waAgentCard,
-.waSettingsCard {
-  border: 1px solid #2a2a2a;
-  border-radius: 10px;
-  background: #141414;
-  padding: 16px;
+.waInboxContainer {
   display: grid;
-  gap: 14px;
+  grid-template-columns: 240px 320px 1fr;
+  height: 100%;
+  min-height: 0;
+  background: #f8fafc;
 }
 
-.waAgentHeader,
-.waSettingsHeader,
-.waAgentActions,
-.waSettingsActions {
+/* Column 1: Navigation Sidebar */
+.waNavSidebar {
+  background: #ffffff;
+  border-right: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  padding: 24px 16px;
+  gap: 24px;
+  flex-shrink: 0;
+}
+
+.waNavSidebar .composeBtn {
+  background: #009b77 !important;
+  color: #ffffff !important;
+  border: 0 !important;
+  border-radius: 8px !important;
+  font-weight: 700 !important;
+  padding: 10px 14px !important;
+  box-shadow: 0 4px 12px rgba(0, 155, 119, 0.15) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  width: 100% !important;
+  cursor: pointer !important;
+  transition: background 0.2s !important;
+  font-size: 13px !important;
+}
+
+.waNavSidebar .composeBtn:hover {
+  background: #008465 !important;
+}
+
+.waNavHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 8px;
+}
+
+.waNavHeader h2 {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+}
+
+.waNavMenu {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.waNavMenu button {
+  border: 0;
+  background: transparent;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #475569;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  width: 100%;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.waNavMenu button:hover {
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+.waNavMenu button.active {
+  background: #f1f5f9;
+  color: #0f172a;
+  font-weight: 600;
+  border-left: 3px solid #009b77; /* Green stripe matching Mailbox style */
+}
+
+.waNavMenu .countBadge {
+  background: #e6fcf5;
+  color: #059669;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 10px;
+}
+
+.waLabelSection {
+  display: flex;
+  flex-direction: column;
   gap: 12px;
 }
 
-.waAgentHeader span,
-.waSettingsHeader h3 {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-}
-
-.waAgentHeader span {
-  color: #20d6c6;
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.7px;
+.waLabelHeader {
+  font-size: 11px;
+  font-weight: 700;
+  color: #94a3b8;
   text-transform: uppercase;
-}
-
-.waAgentHeader h3,
-.waSettingsHeader h3 {
-  margin: 4px 0 0;
-  color: #f4f4f5;
-  font-size: 15px;
-}
-
-.waAgentHeader em,
-.waSettingsHeader span {
-  font-style: normal;
-  border: 1px solid #235c43;
-  border-radius: 999px;
-  background: #12241d;
-  color: #37f29b;
-  padding: 4px 9px;
-  font-size: 10px;
-  font-weight: 800;
-  text-transform: uppercase;
-}
-
-.waAgentActions {
-  justify-content: flex-start;
-}
-
-.waInboundSimulator {
-  border-top: 1px solid #2a2a2a;
-  padding-top: 14px;
-  display: grid;
-  gap: 10px;
-}
-
-.waTimeline {
-  display: grid;
-  gap: 8px;
-  max-height: 260px;
-  overflow-y: auto;
-}
-
-.waBubble {
-  border: 1px solid #2a2a2a;
-  border-radius: 8px;
-  padding: 10px;
-  background: #111111;
-}
-
-.waBubble.outbound {
-  border-color: #235c43;
-  background: #12241d;
-}
-
-.waBubble div {
+  letter-spacing: 0.5px;
   display: flex;
   justify-content: space-between;
-  gap: 10px;
-  color: #f4f4f5;
-  font-size: 11px;
-}
-
-.waBubble span,
-.waBubble small,
-.waEmpty,
-.waSettingsHeader p,
-.waSettingsActions small {
-  color: #a1a1aa;
-  font-size: 11px;
-}
-
-.waBubble p {
-  margin: 7px 0 0;
-  color: #d4d4d8;
-  font-size: 12px;
-  line-height: 1.5;
-}
-
-.waBubble small {
-  display: block;
-  margin-top: 6px;
-  color: #fecaca;
-}
-
-.waDeliveryRow {
-  margin-top: 8px;
-  display: flex !important;
   align-items: center;
-  justify-content: flex-start !important;
-  gap: 8px !important;
+  padding: 0 4px;
+}
+
+.waLabelList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.waLabelItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #475569;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  width: 100%;
+  background: transparent;
+  border: 0;
+  text-align: left;
+  transition: all 0.2s;
+}
+
+.waLabelItem:hover, .waLabelItem.active {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.waLabelDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.waLabelDot.hot { background: #ef4444; }
+.waLabelDot.warm { background: #f97316; }
+.waLabelDot.cold { background: #3b82f6; }
+.waLabelDot.ask_price { background: #a855f7; }
+.waLabelDot.meeting { background: #ec4899; }
+.waLabelDot.rejected { background: #64748b; }
+.waLabelDot.not_valid { background: #cbd5e1; }
+.waLabelDot.unknown { background: #94a3b8; }
+
+/* Column 2: Middle Panel (Contacts list) */
+.waMiddlePanel {
+  background: #ffffff;
+  border-right: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.waSearchWrapper {
+  padding: 16px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.waSearchWrapper input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  border-radius: 8px;
+  outline: 0;
+  font-size: 13px;
+  color: #0f172a;
+}
+
+.waSearchWrapper input:focus {
+  border-color: #009b77;
+  background: #ffffff;
+}
+
+.waContactList {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  align-content: start;
+}
+
+.waContactItem {
+  border: 0;
+  border-bottom: 1px solid #f1f5f9;
+  background: #ffffff;
+  padding: 14px 16px;
+  display: flex;
+  gap: 12px;
+  text-align: left;
+  cursor: pointer;
+  width: 100%;
+  transition: all 0.2s;
+  outline: 0;
+}
+
+.waContactItem:hover {
+  background: #f8fafc;
+}
+
+.waContactItem.active {
+  background: #f0fdf4;
+  border-left: 3px solid #009b77;
+}
+
+.waAvatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #e2e8f0;
+  color: #ffffff;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.waContactMeta {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.waContactHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.waContactHeader strong {
+  font-size: 13px;
+  color: #0f172a;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.waContactHeader span {
+  font-size: 10px;
+  color: #94a3b8;
+  white-space: nowrap;
+}
+
+.waContactItem p {
+  font-size: 12px;
+  color: #64748b;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.waContactBadgeLine {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 2px;
+}
+
+.waContactBadge {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 10px;
+  text-transform: uppercase;
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.waContactBadge.hot { background: #fee2e2; color: #ef4444; }
+.waContactBadge.warm { background: #ffedd5; color: #ea580c; }
+.waContactBadge.cold { background: #dbeafe; color: #2563eb; }
+.waContactBadge.ask_price { background: #f3e8ff; color: #9333ea; }
+.waContactBadge.meeting { background: #fce7f3; color: #db2777; }
+.waContactBadge.rejected { background: #f1f5f9; color: #475569; }
+.waContactBadge.not_valid { background: #f8fafc; color: #94a3b8; }
+.waContactBadge.unknown { background: #f1f5f9; color: #64748b; }
+
+/* Column 3: Chat conversation area */
+.waRightConversationPanel {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  background: #f8fafc;
+  position: relative;
+}
+
+.waChatArea {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: #ffffff;
+}
+
+.waChatHeader {
+  padding: 16px 20px;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: #ffffff;
+  flex-shrink: 0;
+}
+
+.waChatHeader h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.waChatHeader p {
+  margin: 4px 0 0;
+  font-size: 11px;
+  color: #64748b;
+}
+
+.waChatHeaderActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.waChatMessages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: #f8fafc;
+}
+
+.waMessageBubble {
+  max-width: 70%;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 13px;
+  line-height: 1.5;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.waMessageBubble.inbound {
+  background: #ffffff;
+  color: #0f172a;
+  align-self: flex-start;
+  border-bottom-left-radius: 2px;
+  border: 1px solid #e2e8f0;
+}
+
+.waMessageBubble.outbound {
+  background: #e6fcf5;
+  color: #044e3a;
+  align-self: flex-end;
+  border-bottom-right-radius: 2px;
+  border: 1px solid #c2f9e7;
+}
+
+.waMessageHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.waMessageHeader strong {
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.waMessageHeader span {
+  font-size: 9px;
+  color: #94a3b8;
+}
+
+.waMessageBody {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.waMessageFooter {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
 }
 
 .waDeliveryStatus {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  color: #a1a1aa !important;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 600;
 }
 
-.waDeliveryStatus.queued {
-  color: #facc15 !important;
+.waDeliveryStatus.queued { color: #d97706; }
+.waDeliveryStatus.sent { color: #4b5563; }
+.waDeliveryStatus.delivered { color: #2563eb; }
+.waDeliveryStatus.read { color: #10b981; }
+.waDeliveryStatus.failed { color: #ef4444; }
+
+.waDeliveryStatus svg {
+  width: 12px;
+  height: 12px;
 }
 
-.waDeliveryStatus.sent,
-.waDeliveryStatus.delivered,
-.waDeliveryStatus.read {
-  color: #5eead4 !important;
-}
-
-.waDeliveryStatus.failed {
-  color: #fca5a5 !important;
-}
-
-.waDeliveryRow button {
-  width: 26px;
-  height: 26px;
-  margin-left: auto;
-  display: inline-grid;
-  place-items: center;
-  border: 1px solid #3f3f46;
-  border-radius: 6px;
-  background: #18181b;
-  color: #d4d4d8;
-  cursor: pointer;
-}
-
-.waDeliveryRow button:disabled {
-  opacity: 0.5;
-  cursor: wait;
-}
-
-.waBubble .waStatusMessage {
-  color: #fde68a;
-}
-
-.waBubble .waErrorMessage {
-  color: #fecaca;
-}
-
-.waSettingsCard {
-  margin-bottom: 20px;
-}
-
-.waSettingsHeader h3,
-.waSettingsHeader p {
-  margin: 0;
-}
-
-.waSettingsHeader p {
-  margin-top: 5px;
-}
-
-.waSettingsGrid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-}
-
-.waSettingsGrid label {
-  display: grid;
-  gap: 7px;
-  color: #a1a1aa;
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.waSettingsGrid .checkboxLine {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding-top: 22px;
-}
-
-.waSettingsGrid .checkboxLine input {
-  width: 16px;
-  height: 16px;
-  accent-color: #37f29b;
-}
-
-.waInboxPage {
-  height: 100%;
-  min-height: 0;
+/* Reply/Composer Box */
+.waComposerBox {
+  padding: 16px 20px;
+  border-top: 1px solid #e2e8f0;
+  background: #ffffff;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
-  background: #111111;
-  color: #f4f4f5;
-}
-
-.waInboxTopbar {
-  min-height: 76px;
-  padding: 16px 24px;
-  border-bottom: 1px solid #2a2a2a;
-  background: #141414;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-}
-
-.waInboxTopbar h2,
-.waConversationHeader h3,
-.waScreeningPanel h3 {
-  margin: 0;
-  color: #f4f4f5;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.waInboxTopbar p,
-.waConversationHeader span {
-  margin: 5px 0 0;
-  color: #a1a1aa;
-  font-size: 12px;
-}
-
-.waInboxLayout {
-  flex: 1;
-  min-height: 0;
-  display: grid;
-  grid-template-columns: 360px minmax(0, 1fr);
-}
-
-.waContactList {
-  border-right: 1px solid #2a2a2a;
-  background: #111111;
-  overflow-y: auto;
-  padding: 12px;
-  display: grid;
-  gap: 8px;
-  align-content: start;
-}
-
-.waContactList button {
-  text-align: left;
-  border: 1px solid #2a2a2a;
-  border-radius: 8px;
-  background: #161616;
-  color: #f4f4f5;
-  padding: 12px;
-  display: grid;
-  gap: 8px;
-}
-
-.waContactList button.active,
-.waContactList button:hover {
-  border-color: #37f29b;
-  background: #17251f;
-}
-
-.waContactList button div {
-  min-width: 0;
-  display: flex;
-  justify-content: space-between;
   gap: 10px;
+  flex-shrink: 0;
 }
 
-.waContactList strong {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.waComposerBox textarea {
+  width: 100%;
+  min-height: 70px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 10px 12px;
   font-size: 13px;
+  outline: 0;
+  resize: vertical;
+  background: #ffffff;
+  color: #0f172a;
 }
 
-.waContactList span,
-.waContactList p {
-  color: #a1a1aa;
-  font-size: 11px;
+.waComposerBox textarea:focus {
+  border-color: #009b77;
 }
 
-.waContactList p {
-  margin: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.waContactList em {
-  justify-self: start;
-  font-style: normal;
-  border: 1px solid #235c43;
-  border-radius: 999px;
-  background: #12241d;
-  color: #37f29b;
-  padding: 3px 8px;
-  font-size: 10px;
-  font-weight: 800;
-}
-
-.waConversationPane {
-  min-width: 0;
-  min-height: 0;
-  display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto;
-  background: #111111;
-}
-
-.waConversationHeader {
-  padding: 16px 20px;
-  border-bottom: 1px solid #2a2a2a;
-  background: #141414;
+.waComposerActions {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  align-items: center;
 }
 
-.waConversationMessages {
+.waComposerFormatting {
+  display: flex;
+  gap: 6px;
+  color: #64748b;
+  align-items: center;
+}
+
+.waComposerFormatting button {
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  color: inherit;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 4px;
+}
+
+.waComposerFormatting button:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.waComposerSendBtn {
+  background: #009b77 !important;
+  color: #ffffff !important;
+  border: 0 !important;
+  border-radius: 8px;
+  padding: 0 16px;
+  height: 36px;
+  font-size: 13px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 155, 119, 0.15);
+}
+
+.waComposerSendBtn:hover {
+  background: #008465 !important;
+}
+
+.waComposerSendBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Column 4: Collapsible Screening Sidebar */
+.waScreeningSidebar {
+  width: 320px;
+  background: #ffffff;
+  border-left: 1px solid #e2e8f0;
   overflow-y: auto;
   padding: 20px;
-  display: grid;
-  gap: 10px;
-  align-content: start;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  flex-shrink: 0;
 }
 
-.waConversationMessages .waBubble {
-  max-width: 760px;
-}
-
-.waConversationMessages .waBubble.outbound {
-  margin-left: auto;
-}
-
-.waScreeningPanel {
-  border-top: 1px solid #2a2a2a;
-  background: #141414;
-  padding: 16px 20px;
-  display: grid;
-  gap: 12px;
-}
-
-.waReplyPanel {
-  border-top: 1px solid #2a2a2a;
-  background: #111111;
-  padding: 16px 20px;
-  display: grid;
-  gap: 12px;
-}
-
-.waReplyPanel h3,
-.waLeadCreator h3,
-.waFollowUpDrawer h3 {
+.waScreeningSidebar h3 {
   margin: 0;
-  color: #f4f4f5;
+  font-size: 14px;
+  font-weight: 700;
+  color: #0f172a;
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 14px;
+}
+
+.waScreeningSection {
+  border-bottom: 1px solid #f1f5f9;
+  padding-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.waScreeningSection:last-child {
+  border-bottom: 0;
 }
 
 .waScreeningGrid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .waScreeningGrid label {
-  display: grid;
-  gap: 7px;
-  color: #a1a1aa;
-  font-size: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 11px;
   font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .waScreeningGrid input,
 .waScreeningGrid select,
 .waScreeningGrid textarea {
-  min-height: 38px;
-  border: 1px solid #2a2a2a;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
   border-radius: 8px;
-  background: #111111;
-  color: #f4f4f5;
-  padding: 8px 12px;
+  padding: 8px 10px;
+  font-size: 13px;
+  color: #0f172a;
   outline: 0;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.waScreeningGrid input:focus,
+.waScreeningGrid select:focus,
+.waScreeningGrid textarea:focus {
+  border-color: #009b77;
+  box-shadow: 0 0 0 2px rgba(0, 155, 119, 0.1);
 }
 
 .waScreeningGrid textarea {
-  min-height: 86px;
+  min-height: 60px;
   resize: vertical;
 }
 
-.waInlineActions {
+/* Follow-up Queue Drawer (embedded inside navigation or right sidebar) */
+.waFollowUpSection {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: 10px;
 }
 
-.waLeadCreator {
-  border: 1px solid #2a2a2a;
-  border-radius: 8px;
-  background: #111111;
-  padding: 14px;
-  display: grid;
-  gap: 12px;
-}
-
-.waFollowUpDrawer {
-  border-top: 1px solid #2a2a2a;
-  background: #141414;
-  padding: 14px 24px;
-  display: grid;
-  grid-template-columns: 220px repeat(auto-fit, minmax(240px, 1fr));
-  gap: 12px;
-  align-items: start;
-  max-height: 240px;
-  overflow-y: auto;
-}
-
-.waFollowUpDrawer > p {
-  margin: 0;
-  color: #a1a1aa;
-  font-size: 12px;
-}
-
 .waFollowUpItem {
-  border: 1px solid #2a2a2a;
+  border: 1px solid #e2e8f0;
   border-radius: 8px;
-  background: #111111;
-  padding: 12px;
-  display: grid;
-  gap: 8px;
+  background: #ffffff;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .waFollowUpItem strong {
   display: block;
-  color: #f4f4f5;
-  font-size: 13px;
+  color: #0f172a;
+  font-size: 12px;
 }
 
-.waFollowUpItem span,
-.waFollowUpItem p {
-  color: #a1a1aa;
-  font-size: 11px;
+.waFollowUpItem span {
+  color: #94a3b8;
+  font-size: 10px;
 }
 
 .waFollowUpItem p {
   margin: 0;
-  max-height: 46px;
+  font-size: 11px;
+  color: #64748b;
   overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.waInboxEmpty {
-  border: 1px dashed #2a2a2a;
-  border-radius: 8px;
-  color: #a1a1aa;
-  padding: 28px;
+/* Misc alerts/alerts inside chat */
+.operationAlert {
+  background: #ecfdf5;
+  border-bottom: 1px solid #a7f3d0;
+  color: #065f46;
+  padding: 8px 16px;
+  font-size: 12px;
+  font-weight: 600;
   text-align: center;
+  z-index: 20;
+}
+
+.waInboxEmpty, .waInboxEmptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: #94a3b8;
+  padding: 40px 20px;
   font-size: 13px;
+  flex: 1;
 }
 
-.waInboxEmpty code {
-  color: #37f29b;
-}
-
-/* Final near-black pass: remove remaining light inline cards in operational screens. */
-.leadApp [style*="#ffffff"],
-.leadApp [style*="#fff"],
-.leadApp [style*="rgb(255, 255, 255)"],
-.leadApp [style*="#f8fafc"],
-.leadApp [style*="#f1f5f9"],
-.leadApp [style*="rgb(248, 250, 252)"],
-.leadApp [style*="rgb(241, 245, 249)"] {
-  background: #161616 !important;
-  border-color: #2a2a2a !important;
-}
-
-.leadApp section,
-.leadApp aside,
-.leadApp main,
-.leadApp header,
-.leadApp nav {
-  scrollbar-color: #3f3f46 #111111;
-}
-
-.leadApp input[type="checkbox"] {
-  accent-color: #37f29b;
-}
-
-@media (max-width: 960px) {
-  .waInboxLayout {
-    grid-template-columns: 1fr;
-  }
-
-  .waContactList {
-    max-height: 280px;
-    border-right: 0;
-    border-bottom: 1px solid #2a2a2a;
-  }
-
-  .waScreeningGrid {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* Detail drawer final dark override */
-.leadApp .detailPanel,
-.leadApp .detailHeader,
-.leadApp .detailBody {
-  background: #111111 !important;
-  color: #f4f4f5 !important;
-  border-color: #2a2a2a !important;
-}
-
-.leadApp .leadQuickInfo {
-  background: #141414 !important;
-  border-color: #2a2a2a !important;
-  color: #d4d4d8 !important;
-}
-
-.leadApp .leadQuickInfo .infoLine span,
-.leadApp .detailBody label {
-  color: #a1a1aa !important;
-}
-
-.leadApp .leadQuickInfo .infoLine strong,
-.leadApp .detailHeader h2 {
-  color: #f4f4f5 !important;
-}
-
-.leadApp .detailBody input,
-.leadApp .detailBody select,
-.leadApp .detailBody textarea {
-  background: #111111 !important;
-  border-color: #2a2a2a !important;
-  color: #f4f4f5 !important;
-}
-
-.leadApp .detailBody input:focus,
-.leadApp .detailBody select:focus,
-.leadApp .detailBody textarea:focus {
-  background: #111111 !important;
-  border-color: #37f29b !important;
-  box-shadow: 0 0 0 3px rgba(55, 242, 155, 0.12) !important;
+.waInboxEmptyState p {
+  margin: 6px 0 0;
 }

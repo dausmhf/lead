@@ -344,6 +344,7 @@ export default function SchedulePage({ accounts, onOpenAccount, onPatchAccount }
                           whiteSpace: "nowrap",
                           textOverflow: "ellipsis"
                         }}>
+                          PIC: {acc.owner}
                         </span>
                       </div>
                     ))}
@@ -439,6 +440,7 @@ export default function SchedulePage({ accounts, onOpenAccount, onPatchAccount }
                               <MapPin size={11} /> {acc.location || "—"}
                             </span>
                             <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                              <User size={11} /> PIC: {acc.owner}
                             </span>
                             <span style={{ display: "flex", alignItems: "center", gap: "4px", fontWeight: "600", color: "#0f172a" }}>
                               {rupiah.format(acc.dealValue ?? 0)}

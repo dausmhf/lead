@@ -81,5 +81,5 @@ app.use((error: unknown, _req: express.Request, res: express.Response, _next: ex
 });
 
 app.listen(port, "127.0.0.1", () => {
-  console.log(`Lead Website API running at http://127.0.0.1:${port}/api`);
+  console.log(`Lead Website API running at http://127.0.0.1:${port}/api`); // Reloaded env
 });
