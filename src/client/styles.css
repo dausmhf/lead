@@ -1600,8 +1600,9 @@ button {
 
 /* Slider Detail Panel */
 .detailPanel {
-  width: 440px;
-  background: #ffffff;
+  width: min(720px, 58vw);
+  min-width: 560px;
+  background: #f8fafc;
   border-left: 1px solid #e2e8f0;
   display: flex;
   flex-direction: column;
@@ -1611,7 +1612,7 @@ button {
   top: 0;
   bottom: 0;
   z-index: 30;
-  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.08);
+  box-shadow: -16px 0 48px rgba(15, 23, 42, 0.14);
   animation: slideInRight 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -1626,7 +1627,7 @@ button {
 }
 
 .detailHeader {
-  padding: 20px 24px;
+  padding: 24px 30px;
   border-bottom: 1px solid #e2e8f0;
   display: flex;
   justify-content: space-between;
@@ -1644,34 +1645,45 @@ button {
 }
 
 .detailHeader h2 {
-  margin: 4px 0 0;
+  margin: 5px 0 0;
   color: #0f172a;
-  font-size: 18px;
+  font-size: 21px;
   font-weight: 700;
 }
 
+.detailHeader p {
+  margin: 5px 0 0;
+  color: #64748b;
+  font-size: 11px;
+}
+
 .detailBody {
-  padding: 24px;
+  padding: 28px 30px 110px;
   overflow-y: auto;
   display: grid;
-  gap: 16px;
+  align-content: start;
+  gap: 24px;
   flex: 1;
-  background: #ffffff;
+  min-height: 0;
+  background: #f8fafc;
+  scrollbar-gutter: stable;
 }
 
 .leadQuickInfo {
   display: grid;
-  gap: 10px;
-  background: #f8fafc;
-  padding: 14px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  background: #ffffff;
+  padding: 16px;
   border-radius: 8px;
   border: 1px solid #e2e8f0;
 }
 
 .infoLine {
-  display: flex;
-  justify-content: space-between;
-  font-size: 13px;
+  min-width: 0;
+  display: grid;
+  gap: 5px;
+  font-size: 12px;
 }
 
 .infoLine span {
@@ -1681,6 +1693,7 @@ button {
 .infoLine strong {
   color: #0f172a;
   font-weight: 600;
+  overflow-wrap: anywhere;
 }
 
 .divider {
@@ -1691,10 +1704,12 @@ button {
 
 .detailBody label {
   display: grid;
-  gap: 8px;
-  color: #475569;
-  font-size: 12px;
-  font-weight: 600;
+  align-content: start;
+  gap: 7px;
+  color: #64748b;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
 }
 
 .detailBody select,
@@ -1703,16 +1718,18 @@ button {
   border: 1px solid #e2e8f0;
   border-radius: 8px;
   background: #ffffff;
-  min-height: 38px;
-  padding: 8px 12px;
+  min-height: 42px;
+  padding: 9px 12px;
   color: #0f172a;
   font-size: 13px;
+  font-weight: 500;
+  text-transform: none;
   resize: vertical;
   outline: 0;
 }
 
 .detailBody textarea {
-  min-height: 80px;
+  min-height: 100px;
 }
 
 .primaryWide {
@@ -1723,8 +1740,240 @@ button {
   color: #fff;
   font-weight: 600;
   font-size: 13px;
-  margin-top: 8px;
+  margin-top: 0;
   box-shadow: 0 4px 12px rgba(29, 78, 216, 0.15);
+}
+
+.detailSection {
+  min-width: 0;
+  display: grid;
+  gap: 15px;
+}
+
+.detailSection + .detailSection,
+.waAgentCard + .detailSection {
+  border-top: 1px solid #e2e8f0;
+  padding-top: 24px;
+}
+
+.detailSectionTitle {
+  display: grid;
+  gap: 3px;
+}
+
+.detailSectionTitle span {
+  color: #0f766e;
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.detailSectionTitle h3 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 15px;
+}
+
+.detailFieldGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.detailFieldFull {
+  grid-column: 1 / -1;
+}
+
+.waAgentCard {
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 20px;
+  display: grid;
+  gap: 18px;
+  box-shadow: 0 5px 16px rgba(37, 99, 235, 0.06);
+}
+
+.waAgentHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.waAgentHeader > div {
+  display: grid;
+  gap: 5px;
+}
+
+.waAgentHeader span {
+  color: #2563eb;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.waAgentHeader h3 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 17px;
+}
+
+.auditSignal {
+  margin: 0;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: #64748b;
+  padding: 5px 9px;
+  font-size: 9px;
+  font-style: normal;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.auditSignal.hot,
+.auditSignal.meeting {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.auditSignal.rejected,
+.auditSignal.not_valid {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.auditFormGrid {
+  display: grid;
+  grid-template-columns: 180px minmax(0, 1fr);
+  gap: 14px;
+}
+
+.auditMessageField textarea {
+  min-height: 116px;
+}
+
+.waAgentActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.waAgentActions button,
+.waInboundSimulator button {
+  min-height: 38px;
+}
+
+.waInboundSimulator {
+  border-top: 1px solid #e2e8f0;
+  padding-top: 16px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 12px;
+}
+
+.waInboundSimulator textarea {
+  min-height: 78px;
+}
+
+.waTimeline {
+  display: grid;
+  gap: 8px;
+}
+
+.waBubble {
+  border: 1px solid #e2e8f0;
+  border-radius: 7px;
+  padding: 10px 12px;
+  background: #f8fafc;
+  display: grid;
+  gap: 5px;
+}
+
+.waBubble.outbound {
+  border-color: #bfdbfe;
+  background: #eff6ff;
+}
+
+.waBubble > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.waBubble strong,
+.waBubble span,
+.waBubble small {
+  font-size: 9px;
+}
+
+.waBubble p {
+  margin: 0;
+  color: #334155;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.waEmpty {
+  margin: 0;
+  border: 1px dashed #cbd5e1;
+  border-radius: 7px;
+  padding: 16px;
+  color: #64748b;
+  font-size: 11px;
+  text-align: center;
+}
+
+.detailSaveBar {
+  position: sticky;
+  bottom: -110px;
+  z-index: 4;
+  margin: 0 -30px -110px;
+  padding: 16px 30px;
+  border-top: 1px solid #e2e8f0;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(10px);
+}
+
+.detailSaveBar .primaryWide {
+  width: 100%;
+}
+
+@media (max-width: 1080px) {
+  .detailPanel {
+    width: min(680px, 72vw);
+    min-width: 0;
+  }
+}
+
+@media (max-width: 720px) {
+  .detailPanel {
+    width: 100%;
+  }
+
+  .detailHeader,
+  .detailBody {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+
+  .leadQuickInfo,
+  .detailFieldGrid,
+  .auditFormGrid,
+  .waInboundSimulator {
+    grid-template-columns: 1fr;
+  }
+
+  .detailSaveBar {
+    margin-left: -18px;
+    margin-right: -18px;
+    padding-left: 18px;
+    padding-right: 18px;
+  }
 }
 
 .primaryWide:hover {

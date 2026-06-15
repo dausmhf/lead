@@ -197,8 +197,9 @@ export default function DetailPanel({
     <aside className="detailPanel">
       <div className="detailHeader">
         <div>
-          <span>Detail Prospek</span>
-          <h2>{account.name}</h2>
+          <span>People-first prospect</span>
+          <h2>{ownerName || decisionMaker || account.name}</h2>
+          <p>{account.name} · {location}</p>
         </div>
         <button onClick={onClose} className="iconOnly borderBtn">
           <X size={18} />
@@ -213,13 +214,17 @@ export default function DetailPanel({
           </div>
         )}
 
-        <div className="leadQuickInfo">
-          <div className="infoLine"><span>Kategori:</span><strong>{industry}</strong></div>
-          <div className="infoLine"><span>Kota:</span><strong>{location}</strong></div>
-          <div className="infoLine"><span>Pengambil Keputusan (DM):</span><strong>{decisionMaker}</strong></div>
-        </div>
-
-        <hr className="divider" />
+        <section className="detailSection detailSummarySection">
+          <div className="detailSectionTitle">
+            <span>Ringkasan</span>
+            <h3>Profil target</h3>
+          </div>
+          <div className="leadQuickInfo">
+            <div className="infoLine"><span>Kategori</span><strong>{industry}</strong></div>
+            <div className="infoLine"><span>Kota</span><strong>{location}</strong></div>
+            <div className="infoLine"><span>Peran</span><strong>{decisionMaker}</strong></div>
+          </div>
+        </section>
 
         <section className="waAgentCard">
           <div className="waAgentHeader">
@@ -227,18 +232,20 @@ export default function DetailPanel({
               <span><Bot size={13} /> Audit WhatsApp</span>
               <h3>Uji Respons Admin Brand</h3>
             </div>
-            <em>{lastSignal}</em>
+            <em className={`auditSignal ${lastSignal}`}>{lastSignal === "unknown" ? "Belum ada respons" : lastSignal}</em>
           </div>
 
-          <label>
-            Nomor Admin Brand
-            <input value={waTo} onChange={(event) => setWaTo(event.target.value)} placeholder="628..." />
-          </label>
+          <div className="auditFormGrid">
+            <label>
+              Nomor Admin Brand
+              <input value={waTo} onChange={(event) => setWaTo(event.target.value)} placeholder="628..." />
+            </label>
 
-          <label>
-            Pesan Audit
-            <textarea value={waDraft} onChange={(event) => setWaDraft(event.target.value)} />
-          </label>
+            <label className="auditMessageField">
+              Pesan Audit
+              <textarea value={waDraft} onChange={(event) => setWaDraft(event.target.value)} />
+            </label>
+          </div>
 
           <div className="waAgentActions">
             <button className="ghostBtn" type="button" onClick={loadWaConversation} disabled={waBusy}>
@@ -275,153 +282,76 @@ export default function DetailPanel({
           </div>
         </section>
 
-        <hr className="divider" />
+        <section className="detailSection">
+          <div className="detailSectionTitle">
+            <span>Brand & admin</span>
+            <h3>Informasi bisnis</h3>
+          </div>
+          <div className="detailFieldGrid">
+            <label>Kategori Industri<input value={industry} onChange={(event) => setIndustry(event.target.value)} /></label>
+            <label>Kota / Lokasi<input value={location} onChange={(event) => setLocation(event.target.value)} /></label>
+            <label>Nomor Admin Brand<input value={phone} onChange={(event) => setPhone(event.target.value)} placeholder="628..." /></label>
+            <label>Email Admin / Brand<input value={email} onChange={(event) => setEmail(event.target.value)} /></label>
+            <label>Website Brand<input value={website} onChange={(event) => setWebsite(event.target.value)} /></label>
+            <label>Instagram Brand<input value={instagram} onChange={(event) => setInstagram(event.target.value)} /></label>
+            <label>TikTok<input value={tiktok} onChange={(event) => setTiktok(event.target.value)} /></label>
+            <label>Facebook Brand<input value={facebook} onChange={(event) => setFacebook(event.target.value)} /></label>
+            <label>LinkedIn Brand<input value={linkedin} onChange={(event) => setLinkedin(event.target.value)} /></label>
+            <label>Google Business Profile<input value={googleBusinessProfile} onChange={(event) => setGoogleBusinessProfile(event.target.value)} /></label>
+          </div>
+        </section>
 
-        {/* Inputs */}
-        <label>
-          Kategori Industri
-          <input value={industry} onChange={(event) => setIndustry(event.target.value)} placeholder="Masukkan kategori..." />
-        </label>
+        <section className="detailSection">
+          <div className="detailSectionTitle">
+            <span>Decision maker</span>
+            <h3>Owner / Marketing / PIC</h3>
+          </div>
+          <div className="detailFieldGrid">
+            <label>Nama Owner / PIC<input value={ownerName} onChange={(event) => setOwnerName(event.target.value)} /></label>
+            <label>Jabatan<input value={decisionMaker} onChange={(event) => setDecisionMaker(event.target.value)} /></label>
+            <label>Nomor HP Owner<input value={ownerPhone} onChange={(event) => setOwnerPhone(event.target.value)} /></label>
+            <label>Email Owner<input value={ownerEmail} onChange={(event) => setOwnerEmail(event.target.value)} /></label>
+            <label>Instagram Owner<input value={ownerInstagram} onChange={(event) => setOwnerInstagram(event.target.value)} /></label>
+            <label>LinkedIn Owner<input value={ownerLinkedin} onChange={(event) => setOwnerLinkedin(event.target.value)} /></label>
+            <label>Facebook Owner<input value={ownerFacebook} onChange={(event) => setOwnerFacebook(event.target.value)} /></label>
+          </div>
+        </section>
 
-        <label>
-          Kota / Lokasi
-          <input value={location} onChange={(event) => setLocation(event.target.value)} placeholder="Masukkan kota..." />
-        </label>
+        <section className="detailSection">
+          <div className="detailSectionTitle">
+            <span>Pipeline</span>
+            <h3>Deal & tindak lanjut</h3>
+          </div>
+          <div className="detailFieldGrid">
+            <label>
+              Owner CRM
+              <select value={account.owner} onChange={(event) => onPatch({ owner: event.target.value as ProspectOwner })}>
+                {pics.map((pic) => <option key={pic} value={pic}>{pic}</option>)}
+              </select>
+            </label>
+            <label>
+              Produk Utama
+              <select value={account.offerMatch[0] ?? ""} onChange={(event) => onPatch({ offerMatch: event.target.value ? [event.target.value] : [] })}>
+                <option value="">Pilih Produk</option>
+                {productOptions(offers).map((product) => <option key={product} value={product}>{product}</option>)}
+              </select>
+            </label>
+            <label>Nilai Deal<input type="number" value={dealValue} onChange={(event) => setDealValue(Number(event.target.value))} /></label>
+            <label>
+              Progress
+              <select value={account.stage} onChange={(event) => onPatch({ stage: event.target.value as PipelineStage })}>
+                {stages.map((stage) => <option key={stage} value={stage}>{stage}</option>)}
+              </select>
+            </label>
+            <label>Tanggal Meeting<input type="date" value={meetingDate} onChange={(event) => setMeetingDate(event.target.value)} /></label>
+            <label className="detailFieldFull">Next Action<textarea value={nextAction} onChange={(event) => setNextAction(event.target.value)} /></label>
+            <label className="detailFieldFull">Catatan<textarea value={notes} onChange={(event) => setNotes(event.target.value)} /></label>
+          </div>
+        </section>
 
-        <label>
-          Pengambil Keputusan (DM)
-          <input value={decisionMaker} onChange={(event) => setDecisionMaker(event.target.value)} placeholder="Nama PM / DM..." />
-        </label>
-
-        <label>
-          Owner
-          <select 
-            value={account.owner} 
-            onChange={(event) => onPatch({ owner: event.target.value as ProspectOwner })}
-          >
-            {pics.map((pic) => <option key={pic} value={pic}>{pic}</option>)}
-          </select>
-        </label>
-
-        <label>
-          Rekomendasi Produk Utama
-          <select 
-            value={account.offerMatch[0] ?? ""} 
-            onChange={(event) => onPatch({ offerMatch: event.target.value ? [event.target.value] : [] })}
-          >
-            <option value="">Pilih Produk</option>
-            {productOptions(offers).map((product) => <option key={product} value={product}>{product}</option>)}
-          </select>
-        </label>
-
-        <label>
-          Nilai Deal / Closing (IDR)
-          <input
-            type="number"
-            value={dealValue}
-            onChange={(event) => setDealValue(Number(event.target.value))}
-            placeholder="Masukkan nominal deal..."
-          />
-        </label>
-
-        <label>
-          Nomor Admin / WhatsApp Bisnis
-          <input value={phone} onChange={(event) => setPhone(event.target.value)} placeholder="Contoh: 628123456789" />
-        </label>
-
-        <label>
-          Email Admin / Brand
-          <input value={email} onChange={(event) => setEmail(event.target.value)} placeholder="admin@example.com" />
-        </label>
-
-        <label>
-          Website Brand
-          <input value={website} onChange={(event) => setWebsite(event.target.value)} placeholder="https://..." />
-        </label>
-
-        <label>
-          Instagram Brand / Admin
-          <input value={instagram} onChange={(event) => setInstagram(event.target.value)} placeholder="@brand" />
-        </label>
-
-        <label>
-          TikTok
-          <input value={tiktok} onChange={(event) => setTiktok(event.target.value)} placeholder="@brand" />
-        </label>
-
-        <label>
-          Facebook Brand
-          <input value={facebook} onChange={(event) => setFacebook(event.target.value)} placeholder="https://facebook.com/brand" />
-        </label>
-
-        <label>
-          LinkedIn Brand
-          <input value={linkedin} onChange={(event) => setLinkedin(event.target.value)} placeholder="https://linkedin.com/company/brand" />
-        </label>
-
-        <label>
-          Google Business Profile
-          <input value={googleBusinessProfile} onChange={(event) => setGoogleBusinessProfile(event.target.value)} placeholder="https://maps.google.com/..." />
-        </label>
-
-        <hr className="divider" />
-
-        <label>
-          Nama Owner
-          <input value={ownerName} onChange={(event) => setOwnerName(event.target.value)} placeholder="Nama pemilik / founder..." />
-        </label>
-
-        <label>
-          Instagram Owner
-          <input value={ownerInstagram} onChange={(event) => setOwnerInstagram(event.target.value)} placeholder="@owner" />
-        </label>
-
-        <label>
-          Nomor HP Owner
-          <input value={ownerPhone} onChange={(event) => setOwnerPhone(event.target.value)} placeholder="Contoh: 628..." />
-        </label>
-
-        <label>
-          Facebook Owner
-          <input value={ownerFacebook} onChange={(event) => setOwnerFacebook(event.target.value)} placeholder="https://facebook.com/owner" />
-        </label>
-
-        <label>
-          LinkedIn Owner
-          <input value={ownerLinkedin} onChange={(event) => setOwnerLinkedin(event.target.value)} placeholder="https://linkedin.com/in/owner" />
-        </label>
-
-        <label>
-          Email Owner
-          <input value={ownerEmail} onChange={(event) => setOwnerEmail(event.target.value)} placeholder="owner@example.com" />
-        </label>
-
-        <label>
-          Progress Pipeline
-          <select 
-            value={account.stage} 
-            onChange={(event) => onPatch({ stage: event.target.value as PipelineStage })}
-          >
-            {stages.map((stage) => <option key={stage} value={stage}>{stage}</option>)}
-          </select>
-        </label>
-
-        <label>
-          Tanggal Meeting
-          <input type="date" value={meetingDate} onChange={(event) => setMeetingDate(event.target.value)} />
-        </label>
-
-        <label>
-          Next Action (Langkah Selanjutnya)
-          <textarea value={nextAction} onChange={(event) => setNextAction(event.target.value)} />
-        </label>
-
-        <label>
-          Catatan Negosiasi (Notes)
-          <textarea value={notes} onChange={(event) => setNotes(event.target.value)} />
-        </label>
-
-        <button className="primaryWide" onClick={handleSaveDetail}>Simpan Detail</button>
+        <div className="detailSaveBar">
+          <button className="primaryWide" onClick={handleSaveDetail}>Simpan Perubahan</button>
+        </div>
       </div>
     </aside>
   );
