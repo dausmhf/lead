@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { X, AlertCircle } from "lucide-react";
-import type { Account, Offer, Opportunity, PipelineStage, ProspectOwner } from "../../shared/types";
+import { X, AlertCircle, MessageCircle, Send, RefreshCw, Bot } from "lucide-react";
+import type { Account, Offer, PipelineStage, ProspectOwner, WhatsAppMessage } from "../../shared/types";
 
 function productOptions(offers: Offer[]) {
   return [...new Set(["PSH", "Sehat Bercinta", "Media Service KMI", "Media Service Community", ...offers.map((offer) => offer.name)])];
@@ -26,6 +26,8 @@ interface DetailPanelProps {
   pics: ProspectOwner[];
   onClose: () => void;
   onPatch: (fields: Partial<Account> & { dealValue?: number }) => void;
+  apiFetch: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+  onAfterWhatsAppSend?: () => void;
 }
 
 export default function DetailPanel({
@@ -33,7 +35,9 @@ export default function DetailPanel({
   offers,
   pics,
   onClose,
-  onPatch
+  onPatch,
+  apiFetch,
+  onAfterWhatsAppSend
 }: DetailPanelProps) {
   const [industry, setIndustry] = useState(account.industry ?? "");
   const [location, setLocation] = useState(account.location ?? "");
@@ -57,6 +61,11 @@ export default function DetailPanel({
   const [meetingDate, setMeetingDate] = useState(account.meetingDate ?? "");
   const [dealValue, setDealValue] = useState(0);
   const [operationMsg, setOperationMsg] = useState<string | null>(null);
+  const [waTo, setWaTo] = useState("");
+  const [waDraft, setWaDraft] = useState("");
+  const [waMessages, setWaMessages] = useState<WhatsAppMessage[]>([]);
+  const [waBusy, setWaBusy] = useState(false);
+  const [inboundText, setInboundText] = useState("");
 
   useEffect(() => {
     setIndustry(account.industry ?? "");
@@ -82,6 +91,29 @@ export default function DetailPanel({
     setOperationMsg(null);
     setDealValue(account.dealValue ?? 0);
   }, [account]);
+
+  async function loadWaConversation() {
+    try {
+      const [draftRes, messagesRes] = await Promise.all([
+        apiFetch(`/api/whatsapp/draft/${account.id}`),
+        apiFetch(`/api/whatsapp/messages/${account.id}`)
+      ]);
+      if (draftRes.ok) {
+        const payload = await draftRes.json();
+        setWaTo(payload.to ?? "");
+        setWaDraft(payload.draft ?? "");
+      }
+      if (messagesRes.ok) {
+        setWaMessages(await messagesRes.json());
+      }
+    } catch (error) {
+      console.error("Error loading WhatsApp conversation:", error);
+    }
+  }
+
+  useEffect(() => {
+    loadWaConversation();
+  }, [account.id]);
 
   const handleSaveDetail = () => {
     onPatch({
@@ -111,6 +143,54 @@ export default function DetailPanel({
     setTimeout(() => setOperationMsg(null), 3000);
   };
 
+  async function handleSendWhatsApp() {
+    setWaBusy(true);
+    try {
+      const response = await apiFetch(`/api/whatsapp/send/${account.id}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ to: waTo, body: waDraft })
+      });
+      const payload = await response.json();
+      await loadWaConversation();
+      await onAfterWhatsAppSend?.();
+      if (!response.ok) {
+        setOperationMsg(payload.error ?? "WhatsApp gagal dikirim.");
+      } else {
+        setOperationMsg("Pesan WhatsApp berhasil dikirim dan stage dipindah ke Chat Admin.");
+      }
+      setTimeout(() => setOperationMsg(null), 3500);
+    } catch (error) {
+      setOperationMsg(error instanceof Error ? error.message : "WhatsApp gagal dikirim.");
+    } finally {
+      setWaBusy(false);
+    }
+  }
+
+  async function handleRecordInbound() {
+    if (!inboundText.trim()) return;
+    setWaBusy(true);
+    try {
+      const response = await apiFetch(`/api/whatsapp/inbound/${account.id}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ from: waTo || account.phone || account.ownerPhone || "628000000000", body: inboundText })
+      });
+      const payload = await response.json();
+      await loadWaConversation();
+      await onAfterWhatsAppSend?.();
+      setInboundText("");
+      setOperationMsg(response.ok ? `Balasan diklasifikasikan sebagai ${payload.signal}.` : payload.error ?? "Gagal mencatat balasan.");
+      setTimeout(() => setOperationMsg(null), 3500);
+    } catch (error) {
+      setOperationMsg(error instanceof Error ? error.message : "Gagal mencatat balasan.");
+    } finally {
+      setWaBusy(false);
+    }
+  }
+
+  const lastSignal = waMessages.find((message) => message.direction === "inbound")?.signal ?? "unknown";
+
   return (
     <aside className="detailPanel">
       <div className="detailHeader">
@@ -136,6 +216,61 @@ export default function DetailPanel({
           <div className="infoLine"><span>Kota:</span><strong>{location}</strong></div>
           <div className="infoLine"><span>Pengambil Keputusan (DM):</span><strong>{decisionMaker}</strong></div>
         </div>
+
+        <hr className="divider" />
+
+        <section className="waAgentCard">
+          <div className="waAgentHeader">
+            <div>
+              <span><Bot size={13} /> WA Agentic MVP</span>
+              <h3>Hubungi & Klasifikasikan</h3>
+            </div>
+            <em>{lastSignal}</em>
+          </div>
+
+          <label>
+            Nomor Tujuan
+            <input value={waTo} onChange={(event) => setWaTo(event.target.value)} placeholder="628..." />
+          </label>
+
+          <label>
+            Draft Pesan
+            <textarea value={waDraft} onChange={(event) => setWaDraft(event.target.value)} />
+          </label>
+
+          <div className="waAgentActions">
+            <button className="ghostBtn" type="button" onClick={loadWaConversation} disabled={waBusy}>
+              <RefreshCw size={13} /> Draft Ulang
+            </button>
+            <button className="primaryBtn" type="button" onClick={handleSendWhatsApp} disabled={waBusy || !waDraft.trim() || !waTo.trim()}>
+              <Send size={13} /> Kirim WA
+            </button>
+          </div>
+
+          <div className="waInboundSimulator">
+            <label>
+              Simulasi Balasan Masuk
+              <textarea value={inboundText} onChange={(event) => setInboundText(event.target.value)} placeholder="Contoh: Boleh, harganya berapa ya?" />
+            </label>
+            <button className="ghostBtn" type="button" onClick={handleRecordInbound} disabled={waBusy || !inboundText.trim()}>
+              <MessageCircle size={13} /> Klasifikasikan
+            </button>
+          </div>
+
+          <div className="waTimeline">
+            {waMessages.slice(0, 6).map((message) => (
+              <div key={message.id} className={`waBubble ${message.direction}`}>
+                <div>
+                  <strong>{message.direction === "outbound" ? "Daus" : account.name}</strong>
+                  <span>{message.status} · {message.signal}</span>
+                </div>
+                <p>{message.body}</p>
+                {message.error && <small>{message.error}</small>}
+              </div>
+            ))}
+            {waMessages.length === 0 && <p className="waEmpty">Belum ada percakapan WhatsApp untuk prospek ini.</p>}
+          </div>
+        </section>
 
         <hr className="divider" />
 

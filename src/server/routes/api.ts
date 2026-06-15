@@ -5,6 +5,7 @@ import { prospectTeam } from "../data/seed";
 import { readDb, updateDb, updateSyncTarget } from "../data/store";
 import { createResearchJob, generateOutreach, matchOffers } from "../services/aiResearch";
 import { pushToExternalCrm } from "../services/sync";
+import { generateWaDraft, preferredWaNumber, recordInboundWhatsApp, recordStarsenderWebhook, screenWhatsAppContact, sendWhatsAppMessage } from "../services/whatsapp";
 
 export const apiRouter = Router();
 
@@ -82,6 +83,15 @@ const inboxLeadSchema = z.object({
   stage: stageSchema.default("Belum Dihubungi"),
   briefStatus: z.enum(["Belum Brief", "On Brief", "Brief Sent", "Revisi Brief", "Deal Brief"]).default("Belum Brief"),
   dealValue: z.number().optional().default(0)
+});
+
+const whatsappSettingsSchema = z.object({
+  provider: z.enum(["mock", "starsender", "waba"]),
+  enabled: z.boolean().default(false),
+  starsenderApiKey: z.string().optional(),
+  starsenderBaseUrl: z.string().url().optional().or(z.literal("")),
+  wabaAccessToken: z.string().optional(),
+  wabaPhoneNumberId: z.string().optional()
 });
 
 function findOfferByProduct(offers: Offer[], product?: string): Offer | undefined {
@@ -388,6 +398,7 @@ apiRouter.delete("/accounts/:id", (req, res) => {
     deleted = db.accounts.length !== before;
     if (deleted) {
       db.opportunities = db.opportunities.filter((item) => item.accountId !== req.params.id);
+      db.whatsappMessages = db.whatsappMessages.filter((item) => item.accountId !== req.params.id);
     }
   });
   if (!deleted) return res.status(404).json({ error: "Account not found" });
@@ -567,6 +578,132 @@ apiRouter.post("/sync/push", async (req, res, next) => {
   } catch (error) {
     next(error);
   }
+});
+
+apiRouter.get("/whatsapp/settings", (_req, res) => {
+  res.json(readDb().whatsappSettings);
+});
+
+apiRouter.put("/whatsapp/settings", (req, res) => {
+  const body = whatsappSettingsSchema.parse(req.body);
+  let settings = readDb().whatsappSettings;
+  updateDb((db) => {
+    db.whatsappSettings = {
+      ...db.whatsappSettings,
+      ...body,
+      starsenderBaseUrl: body.starsenderBaseUrl || "https://api.starsender.online/api",
+      updatedAt: new Date().toISOString()
+    };
+    settings = db.whatsappSettings;
+  });
+  res.json(settings);
+});
+
+apiRouter.get("/whatsapp/messages/:accountId", (req, res) => {
+  const messages = readDb().whatsappMessages
+    .filter((message) => message.accountId === req.params.accountId)
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  res.json(messages);
+});
+
+apiRouter.get("/whatsapp/inbox", (_req, res) => {
+  const db = readDb();
+  const messagesByPhone = new Map<string, typeof db.whatsappMessages[number]>();
+  for (const message of db.whatsappMessages) {
+    const phone = message.contactPhone || message.from || message.to;
+    const existing = messagesByPhone.get(phone);
+    if (!existing || message.createdAt > existing.createdAt) messagesByPhone.set(phone, message);
+  }
+  const contacts = db.whatsappContacts
+    .map((contact) => ({
+      ...contact,
+      account: contact.accountId ? db.accounts.find((account) => account.id === contact.accountId) : undefined,
+      lastMessage: messagesByPhone.get(contact.phone)
+    }))
+    .sort((a, b) => (b.lastMessageAt ?? "").localeCompare(a.lastMessageAt ?? ""));
+  res.json({ contacts, totalMessages: db.whatsappMessages.length });
+});
+
+apiRouter.get("/whatsapp/messages/by-phone/:phone", (req, res) => {
+  const phone = req.params.phone.replace(/\D/g, "");
+  const messages = readDb().whatsappMessages
+    .filter((message) => (message.contactPhone || message.from || message.to) === phone)
+    .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+  res.json(messages);
+});
+
+apiRouter.post("/whatsapp/contacts/:phone/screen", (req, res) => {
+  const body = z.object({
+    classification: z.enum(["cold", "warm", "hot", "ask_price", "meeting", "rejected", "not_valid", "unknown"]),
+    status: z.enum(["new", "screened", "linked", "ignored"]).optional(),
+    notes: z.string().optional(),
+    accountId: z.string().optional()
+  }).parse(req.body);
+  const contact = screenWhatsAppContact({ phone: req.params.phone, ...body });
+  if (!contact) return res.status(404).json({ error: "WhatsApp contact not found" });
+  res.json(contact);
+});
+
+apiRouter.post("/whatsapp/inbox/refresh", (_req, res) => {
+  const db = readDb();
+  res.json({
+    contacts: db.whatsappContacts.length,
+    messages: db.whatsappMessages.length,
+    source: "local_webhook_store"
+  });
+});
+
+apiRouter.post("/whatsapp/webhook/starsender", (req, res, next) => {
+  try {
+    const secret = process.env.WHATSAPP_WEBHOOK_SECRET;
+    if (secret) {
+      const provided = req.get("x-webhook-secret") || String(req.query.secret ?? "");
+      if (provided !== secret) return res.status(401).json({ error: "Invalid webhook secret" });
+    }
+    const message = recordStarsenderWebhook(req.body);
+    res.status(201).json({ ok: true, messageId: message.id, signal: message.signal });
+  } catch (error) {
+    next(error);
+  }
+});
+
+apiRouter.get("/whatsapp/draft/:accountId", (req, res) => {
+  const account = readDb().accounts.find((item) => item.id === req.params.accountId);
+  if (!account) return res.status(404).json({ error: "Account not found" });
+  res.json({
+    accountId: account.id,
+    to: preferredWaNumber(account),
+    draft: generateWaDraft(account)
+  });
+});
+
+apiRouter.post("/whatsapp/send/:accountId", async (req, res, next) => {
+  try {
+    const body = z.object({
+      to: z.string().optional(),
+      body: z.string().min(3)
+    }).parse(req.body);
+    const account = readDb().accounts.find((item) => item.id === req.params.accountId);
+    if (!account) return res.status(404).json({ error: "Account not found" });
+    const message = await sendWhatsAppMessage({ account, to: body.to, body: body.body });
+    res.status(message.status === "failed" ? 502 : 201).json(message);
+  } catch (error) {
+    next(error);
+  }
+});
+
+apiRouter.post("/whatsapp/inbound/:accountId", (req, res) => {
+  const body = z.object({
+    from: z.string().min(4),
+    body: z.string().min(1)
+  }).parse(req.body);
+  const account = readDb().accounts.find((item) => item.id === req.params.accountId);
+  if (!account) return res.status(404).json({ error: "Account not found" });
+  res.status(201).json(recordInboundWhatsApp({
+    accountId: account.id,
+    from: body.from,
+    body: body.body
+  }));
 });
 
 apiRouter.post("/operator/full-flow", async (req, res, next) => {

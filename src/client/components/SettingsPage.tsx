@@ -1,12 +1,14 @@
-import React, { useState } from "react";
-import { Terminal, Copy, Check, Code, Database, Globe, HelpCircle } from "lucide-react";
-import type { Offer, SyncRun, SyncTarget } from "../../shared/types";
+import React, { useEffect, useState } from "react";
+import { Terminal, Copy, Check, Code, Database, MessageCircle } from "lucide-react";
+import type { Offer, SyncRun, SyncTarget, WhatsAppSettings } from "../../shared/types";
 
 interface SettingsPageProps {
   offers: Offer[];
   syncTarget: SyncTarget | null;
   syncRuns: SyncRun[];
+  whatsappSettings: WhatsAppSettings | null;
   onSaveTarget: (target: { endpointUrl: string; authHeader?: string; enabled: boolean }) => Promise<void>;
+  onSaveWhatsAppSettings: (settings: WhatsAppSettings) => Promise<void>;
   onTriggerSync: (dryRun: boolean) => Promise<SyncRun>;
   busy: boolean;
 }
@@ -15,11 +17,22 @@ export default function SettingsPage({
   offers,
   syncTarget,
   syncRuns,
+  whatsappSettings,
   onSaveTarget,
+  onSaveWhatsAppSettings,
   onTriggerSync,
   busy
 }: SettingsPageProps) {
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  const [waSettings, setWaSettings] = useState<WhatsAppSettings>({
+    provider: "mock",
+    enabled: false,
+    starsenderBaseUrl: "https://api.starsender.online/api"
+  });
+
+  useEffect(() => {
+    if (whatsappSettings) setWaSettings(whatsappSettings);
+  }, [whatsappSettings]);
 
   const endpointUrl = "http://127.0.0.1:8788/api/inbox/leads";
 
@@ -168,6 +181,62 @@ pushLeads();`;
           </p>
         </div>
       </header>
+
+      <div className="waSettingsCard">
+        <div className="waSettingsHeader">
+          <div>
+            <h3><MessageCircle size={16} /> WhatsApp Agentic MVP</h3>
+            <p>Mode mock aman untuk testing. Starsender akan memakai endpoint resmi dokumentasi Starsender: <code>/send</code>.</p>
+          </div>
+          <span>{waSettings.enabled ? "aktif" : "mock/off"}</span>
+        </div>
+
+        <div className="waSettingsGrid">
+          <label>
+            Provider
+            <select
+              value={waSettings.provider}
+              onChange={(event) => setWaSettings({ ...waSettings, provider: event.target.value as WhatsAppSettings["provider"] })}
+            >
+              <option value="mock">Mock Local</option>
+              <option value="starsender">Starsender</option>
+              <option value="waba">WABA Cloud API</option>
+            </select>
+          </label>
+          <label className="checkboxLine">
+            <input
+              type="checkbox"
+              checked={waSettings.enabled}
+              onChange={(event) => setWaSettings({ ...waSettings, enabled: event.target.checked })}
+            />
+            Aktifkan pengiriman provider real
+          </label>
+          <label>
+            Starsender Base URL
+            <input
+              value={waSettings.starsenderBaseUrl ?? ""}
+              onChange={(event) => setWaSettings({ ...waSettings, starsenderBaseUrl: event.target.value })}
+              placeholder="https://api.starsender.online/api"
+            />
+          </label>
+          <label>
+            Starsender Device API Key
+            <input
+              type="password"
+              value={waSettings.starsenderApiKey ?? ""}
+              onChange={(event) => setWaSettings({ ...waSettings, starsenderApiKey: event.target.value })}
+              placeholder="Authorization key dari menu Device"
+            />
+          </label>
+        </div>
+
+        <div className="waSettingsActions">
+          <button className="saveBtn" type="button" disabled={busy} onClick={() => onSaveWhatsAppSettings(waSettings)}>
+            Simpan WhatsApp Provider
+          </button>
+          <small>WABA disiapkan sebagai opsi arsitektur, adapter real-nya belum diaktifkan di MVP ini.</small>
+        </div>
+      </div>
 
       <div className="settingsGrid" style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: "24px", height: "calc(100vh - 160px)", overflowY: "auto", paddingRight: "8px" }}>
         {/* Left Side: API Documentation & JSON Payload */}

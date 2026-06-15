@@ -10,7 +10,8 @@ import {
   LayoutDashboard,
   CalendarCheck,
   Lock,
-  LogOut
+  LogOut,
+  MessageCircle
 } from "lucide-react";
 import type { 
   Account, 
@@ -20,7 +21,8 @@ import type {
   ProspectOwner, 
   LeadFinding, 
   SyncTarget, 
-  SyncRun 
+  SyncRun,
+  WhatsAppSettings
 } from "../shared/types";
 import "./styles.css";
 
@@ -31,6 +33,7 @@ import SettingsPage from "./components/SettingsPage";
 import DetailPanel from "./components/DetailPanel";
 import CrmDashboard from "./components/CrmDashboard";
 import SchedulePage from "./components/SchedulePage";
+import WhatsappInbox from "./components/WhatsappInbox";
 
 
 interface Summary {
@@ -124,7 +127,7 @@ const rupiah = new Intl.NumberFormat("id-ID", {
   maximumFractionDigits: 0
 });
 
-const navTabs = ["dashboard", "deals", "leads", "schedule", "settings"] as const;
+const navTabs = ["dashboard", "deals", "leads", "whatsapp", "schedule", "settings"] as const;
 type NavTab = typeof navTabs[number];
 const activeTabStorageKey = "lead-website.activeTab";
 
@@ -154,6 +157,7 @@ function App() {
   const [jobs, setJobs] = useState<any[]>([]);
   const [syncTarget, setSyncTarget] = useState<SyncTarget | null>(null);
   const [syncRuns, setSyncRuns] = useState<SyncRun[]>([]);
+  const [whatsappSettings, setWhatsappSettings] = useState<WhatsAppSettings | null>(null);
   const [summary, setSummary] = useState<Summary | null>(null);
   const [filters, setFilters] = useState<Filters | null>(null);
   
@@ -195,7 +199,8 @@ function App() {
         findingsRes,
         jobsRes,
         syncTargetRes,
-        syncRunsRes
+        syncRunsRes,
+        whatsappSettingsRes
       ] = await Promise.all([
         apiFetch("/api/accounts"),
         apiFetch("/api/offers"),
@@ -205,7 +210,8 @@ function App() {
         apiFetch("/api/lead-findings"),
         apiFetch("/api/ai/research-jobs"),
         apiFetch("/api/sync/target"),
-        apiFetch("/api/sync/runs")
+        apiFetch("/api/sync/runs"),
+        apiFetch("/api/whatsapp/settings")
       ]);
       if (accountsRes.status === 401) {
         setAuthStatus("guest");
@@ -221,6 +227,7 @@ function App() {
       setJobs(await jobsRes.json());
       setSyncTarget(await syncTargetRes.json());
       setSyncRuns(await syncRunsRes.json());
+      setWhatsappSettings(await whatsappSettingsRes.json());
     } catch (error) {
       console.error("Error loading CRM database:", error);
     }
@@ -572,6 +579,24 @@ function App() {
     }
   }
 
+  async function handleSaveWhatsAppSettings(settings: WhatsAppSettings) {
+    setBusy(true);
+    try {
+      const res = await apiFetch("/api/whatsapp/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(settings)
+      });
+      if (!res.ok) throw new Error("Gagal menyimpan konfigurasi WhatsApp");
+      setWhatsappSettings(await res.json());
+      await loadData();
+    } catch (e) {
+      console.error("Error saving WhatsApp settings:", e);
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function handleTriggerSync(dryRun: boolean): Promise<SyncRun> {
     setBusy(true);
     try {
@@ -620,6 +645,7 @@ function App() {
     setFindings([]);
     setJobs([]);
     setSyncRuns([]);
+    setWhatsappSettings(null);
     setSummary(null);
     setFilters(null);
   }
@@ -710,12 +736,23 @@ function App() {
           />
         )}
 
+        {activeTab === "whatsapp" && (
+          <WhatsappInbox
+            accounts={accounts}
+            apiFetch={apiFetch}
+            onOpenAccount={(acc) => setSelectedAccount(acc)}
+            onDataChanged={loadData}
+          />
+        )}
+
         {activeTab === "settings" && (
           <SettingsPage
             offers={offers}
             syncTarget={syncTarget}
             syncRuns={syncRuns}
+            whatsappSettings={whatsappSettings}
             onSaveTarget={handleSaveSyncTarget}
+            onSaveWhatsAppSettings={handleSaveWhatsAppSettings}
             onTriggerSync={handleTriggerSync}
             busy={busy}
           />
@@ -728,8 +765,10 @@ function App() {
               account={selectedAccount}
               offers={offers}
               pics={filters?.owners ?? ["Daus"]}
+              apiFetch={apiFetch}
               onClose={() => setSelectedAccount(null)}
               onPatch={(fields) => patchAccount(selectedAccount.id, fields)}
+              onAfterWhatsAppSend={loadData}
             />
           </>
         )}
@@ -764,6 +803,7 @@ function Sidebar({
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
     { id: "deals", label: "Pipeline Deals", icon: CalendarDays },
     { id: "leads", label: "Database Prospek", icon: Search },
+    { id: "whatsapp", label: "WA Inbox", icon: MessageCircle },
     { id: "schedule", label: "Jadwal Meeting", icon: CalendarCheck },
     { id: "settings", label: "Integrasi & API", icon: Settings }
   ];

@@ -18,7 +18,41 @@ function initialDatabase(): CrmDatabase {
       authHeader: process.env.CRM_PUSH_AUTH_HEADER ?? "",
       enabled: Boolean(process.env.CRM_PUSH_ENDPOINT)
     },
-    syncRuns: []
+    syncRuns: [],
+    whatsappSettings: {
+      provider: "mock",
+      enabled: false,
+      starsenderBaseUrl: process.env.STARSENDER_BASE_URL ?? "https://api.starsender.online/api"
+    },
+    whatsappContacts: [],
+    whatsappMessages: []
+  };
+}
+
+function normalizeDatabase(db: Partial<CrmDatabase>): CrmDatabase {
+  const base = initialDatabase();
+  return {
+    ...base,
+    ...db,
+    accounts: db.accounts ?? base.accounts,
+    offers: db.offers ?? base.offers,
+    opportunities: db.opportunities ?? base.opportunities,
+    aiResearchJobs: db.aiResearchJobs ?? base.aiResearchJobs,
+    leadFindings: db.leadFindings ?? base.leadFindings,
+    syncTarget: db.syncTarget ?? base.syncTarget,
+    syncRuns: db.syncRuns ?? base.syncRuns,
+    whatsappSettings: {
+      ...base.whatsappSettings,
+      ...(db.whatsappSettings ?? {}),
+      starsenderApiKey: db.whatsappSettings?.starsenderApiKey ?? process.env.STARSENDER_API_KEY ?? "",
+      wabaAccessToken: db.whatsappSettings?.wabaAccessToken ?? process.env.WABA_ACCESS_TOKEN ?? "",
+      wabaPhoneNumberId: db.whatsappSettings?.wabaPhoneNumberId ?? process.env.WABA_PHONE_NUMBER_ID ?? ""
+    },
+    whatsappContacts: db.whatsappContacts ?? base.whatsappContacts,
+    whatsappMessages: (db.whatsappMessages ?? base.whatsappMessages).map((message) => ({
+      ...message,
+      contactPhone: message.contactPhone ?? message.from ?? message.to
+    }))
   };
 }
 
@@ -31,7 +65,12 @@ function ensureDatabase(): void {
 
 export function readDb(): CrmDatabase {
   ensureDatabase();
-  return JSON.parse(readFileSync(dbPath, "utf8")) as CrmDatabase;
+  const raw = JSON.parse(readFileSync(dbPath, "utf8")) as Partial<CrmDatabase>;
+  const db = normalizeDatabase(raw);
+  if (!raw.whatsappSettings || !raw.whatsappMessages || !raw.whatsappContacts) {
+    writeDb(db);
+  }
+  return db;
 }
 
 export function writeDb(db: CrmDatabase): CrmDatabase {

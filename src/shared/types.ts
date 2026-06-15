@@ -137,6 +137,60 @@ export interface SyncRun {
   error?: string;
 }
 
+export type WhatsAppProvider = "mock" | "starsender" | "waba";
+export type WhatsAppMessageDirection = "outbound" | "inbound";
+export type WhatsAppMessageStatus = "draft" | "queued" | "sent" | "delivered" | "read" | "failed";
+export type WhatsAppLeadSignal =
+  | "cold"
+  | "warm"
+  | "hot"
+  | "ask_price"
+  | "meeting"
+  | "rejected"
+  | "not_valid"
+  | "unknown";
+
+export interface WhatsAppSettings {
+  provider: WhatsAppProvider;
+  enabled: boolean;
+  starsenderApiKey?: string;
+  starsenderBaseUrl?: string;
+  wabaAccessToken?: string;
+  wabaPhoneNumberId?: string;
+  updatedAt?: string;
+}
+
+export interface WhatsAppContact {
+  id: string;
+  phone: string;
+  name?: string;
+  accountId?: string;
+  classification: WhatsAppLeadSignal;
+  status: "new" | "screened" | "linked" | "ignored";
+  notes?: string;
+  lastMessageAt?: string;
+  unreadCount: number;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface WhatsAppMessage {
+  id: string;
+  accountId?: string;
+  contactPhone: string;
+  to: string;
+  from?: string;
+  body: string;
+  direction: WhatsAppMessageDirection;
+  status: WhatsAppMessageStatus;
+  provider: WhatsAppProvider;
+  signal: WhatsAppLeadSignal;
+  externalId?: string;
+  error?: string;
+  raw?: unknown;
+  createdAt: string;
+}
+
 export interface CrmDatabase {
   accounts: Account[];
   offers: Offer[];
@@ -145,4 +199,7 @@ export interface CrmDatabase {
   leadFindings: LeadFinding[];
   syncTarget: SyncTarget;
   syncRuns: SyncRun[];
+  whatsappSettings: WhatsAppSettings;
+  whatsappContacts: WhatsAppContact[];
+  whatsappMessages: WhatsAppMessage[];
 }

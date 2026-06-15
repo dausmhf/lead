@@ -189,6 +189,7 @@ export function registerAuthRoutes(router: Router): void {
 
 export function requireAuth(req: Request, res: Response, next: NextFunction): void {
   if (req.path === "/health") return next();
+  if (req.path === "/whatsapp/webhook/starsender") return next();
 
   const session = currentSession(req);
   if (!session) {
