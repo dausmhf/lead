@@ -59,6 +59,24 @@ function deliveryLabel(message: WhatsAppMessage) {
   return message.status;
 }
 
+function formatDuration(milliseconds: number) {
+  const totalSeconds = Math.max(0, Math.floor(milliseconds / 1000));
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  if (hours > 0) return `${hours}j ${minutes}m ${seconds}d`;
+  if (minutes > 0) return `${minutes}m ${seconds}d`;
+  return `${seconds} detik`;
+}
+
+function normalizePhone(value?: string) {
+  const digits = (value ?? "").replace(/\D/g, "");
+  if (digits.startsWith("0")) return `62${digits.slice(1)}`;
+  if (digits.startsWith("8")) return `62${digits}`;
+  return digits;
+}
+
 export default function WhatsappInbox({
   accounts,
   apiFetch,
@@ -82,6 +100,7 @@ export default function WhatsappInbox({
   const [followUpAt, setFollowUpAt] = useState("");
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState("");
+  const [clockNow, setClockNow] = useState(() => Date.now());
   const replyInputRef = useRef<HTMLTextAreaElement>(null);
 
   // New visual state
@@ -108,6 +127,47 @@ export default function WhatsappInbox({
   const pendingFollowUpsCount = useMemo(() => {
     return followUps.filter((task) => task.status === "pending").length;
   }, [followUps]);
+
+  const responseTimer = useMemo(() => {
+    const selectedNumber = normalizePhone(selectedContact?.phone);
+    const brandNumber = normalizePhone(selectedContact?.account?.phone);
+    const ownerNumber = normalizePhone(selectedContact?.account?.ownerPhone);
+    const isOwnerContact = Boolean(ownerNumber && selectedNumber === ownerNumber && selectedNumber !== brandNumber);
+    if (isOwnerContact) {
+      return { state: "idle" as const, label: "Kontak owner tidak diaudit" };
+    }
+
+    const timeline = [...messages].sort(
+      (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+    );
+    let lastOutboundIndex = -1;
+    for (let index = timeline.length - 1; index >= 0; index -= 1) {
+      if (timeline[index].direction === "outbound" && timeline[index].status !== "failed") {
+        lastOutboundIndex = index;
+        break;
+      }
+    }
+
+    if (lastOutboundIndex < 0) {
+      return { state: "idle" as const, label: "Belum diaudit" };
+    }
+
+    const outbound = timeline[lastOutboundIndex];
+    const reply = timeline.slice(lastOutboundIndex + 1).find((message) => message.direction === "inbound");
+    const outboundTime = new Date(outbound.createdAt).getTime();
+
+    if (reply) {
+      const duration = new Date(reply.createdAt).getTime() - outboundTime;
+      return { state: "answered" as const, label: `Dibalas ${formatDuration(duration)}` };
+    }
+
+    return { state: "waiting" as const, label: `Menunggu ${formatDuration(clockNow - outboundTime)}` };
+  }, [messages, clockNow, selectedContact]);
+
+  useEffect(() => {
+    const interval = window.setInterval(() => setClockNow(Date.now()), 1000);
+    return () => window.clearInterval(interval);
+  }, []);
 
   async function loadInbox(preferredPhone = selectedPhone) {
     const response = await apiFetch("/api/whatsapp/inbox");
@@ -488,6 +548,13 @@ export default function WhatsappInbox({
                   <p>{selectedContact.phone} — {selectedContact.status || "Aktif"} (Terakhir {formatTime(selectedContact.lastMessageAt)})</p>
                 </div>
                 <div className="waChatHeaderActions">
+                  <div className={`waResponseTimer ${responseTimer.state}`} title="Audit dihitung dari pesan keluar terakhir ke balasan pertama admin brand">
+                    <Clock3 size={14} />
+                    <div>
+                      <span>Audit admin brand</span>
+                      <strong>{responseTimer.label}</strong>
+                    </div>
+                  </div>
                   {selectedContact.account && (
                     <button
                       className="ghostBtn"

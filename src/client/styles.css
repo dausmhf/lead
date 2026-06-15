@@ -830,6 +830,313 @@ button {
   touch-action: pan-x pan-y;
 }
 
+.ownerCardContent {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #f8fafc;
+}
+
+.ownerCardToolbar {
+  min-height: 42px;
+  padding: 0 24px;
+  border-bottom: 1px solid #e2e8f0;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.ownerCardToolbar label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.ownerCardToolbar input,
+.ownerCardTop input {
+  accent-color: #0f766e;
+}
+
+.ownerCardGrid {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  align-content: start;
+  gap: 14px;
+  padding: 18px 24px 24px;
+  scrollbar-gutter: stable;
+}
+
+.ownerProspectCard {
+  min-width: 0;
+  min-height: 310px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  cursor: pointer;
+  transition: border-color 0.16s ease, box-shadow 0.16s ease, transform 0.16s ease;
+}
+
+.ownerProspectCard:hover,
+.ownerProspectCard:focus-visible {
+  outline: 0;
+  border-color: #94a3b8;
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08);
+  transform: translateY(-1px);
+}
+
+.ownerProspectCard.selected {
+  border-color: #0f766e;
+  box-shadow: 0 0 0 2px rgba(15, 118, 110, 0.12);
+}
+
+.ownerCardTop {
+  min-height: 28px;
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr) 28px;
+  align-items: center;
+  gap: 8px;
+}
+
+.ownerStageBadge {
+  justify-self: start;
+  max-width: 100%;
+  border: 1px solid;
+  border-radius: 999px;
+  padding: 4px 9px;
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ownerDeleteButton {
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #94a3b8;
+  display: grid;
+  place-items: center;
+}
+
+.ownerDeleteButton:hover {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.ownerIdentity {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+}
+
+.ownerAvatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  background: #0f766e;
+  color: #ffffff;
+  display: grid;
+  place-items: center;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.ownerAvatar.missing {
+  background: #e2e8f0;
+  color: #64748b;
+}
+
+.ownerIdentity h3 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 15px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.ownerIdentity p {
+  margin: 4px 0 0;
+  color: #64748b;
+  font-size: 11px;
+  line-height: 1.4;
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
+}
+
+.ownerIdentity p svg {
+  flex: 0 0 auto;
+  margin-top: 1px;
+}
+
+.ownerBrandBlock {
+  border-top: 1px solid #f1f5f9;
+  border-bottom: 1px solid #f1f5f9;
+  padding: 11px 0;
+  display: grid;
+  gap: 5px;
+}
+
+.ownerBrandBlock strong,
+.ownerBrandBlock span {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ownerBrandBlock strong {
+  color: #334155;
+  font-size: 12px;
+}
+
+.ownerBrandBlock span,
+.ownerBrandBlock small {
+  color: #64748b;
+  font-size: 10px;
+}
+
+.ownerBrandBlock svg {
+  flex: 0 0 auto;
+}
+
+.ownerProduct {
+  display: grid;
+  gap: 3px;
+}
+
+.ownerProduct span,
+.ownerCardFooter span {
+  color: #94a3b8;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.ownerProduct strong {
+  color: #334155;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.ownerContactRow {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.ownerContactGroups {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 10px;
+}
+
+.ownerContactGroup {
+  min-width: 0;
+  border: 1px solid #e2e8f0;
+  border-radius: 7px;
+  padding: 9px;
+  display: grid;
+  gap: 7px;
+}
+
+.ownerContactGroup > span {
+  color: #64748b;
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.ownerContactGroup.brandAudit {
+  border-color: #bfdbfe;
+  background: #eff6ff;
+}
+
+.ownerContactGroup.brandAudit > span {
+  color: #1d4ed8;
+}
+
+.ownerContactRow .channelIcon {
+  width: 32px;
+  height: 32px;
+}
+
+.ownerCardFooter {
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid #f1f5f9;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ownerCardFooter > div {
+  display: grid;
+  gap: 3px;
+}
+
+.ownerCardFooter strong {
+  color: #0f172a;
+  font-size: 12px;
+}
+
+.ownerDetailLink {
+  color: #0f766e !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.ownerCardGrid.compact {
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+}
+
+.ownerCardGrid.compact .ownerProspectCard {
+  min-height: 300px;
+  gap: 10px;
+  padding: 13px;
+}
+
+@media (max-width: 430px) {
+  .ownerContactGroups {
+    grid-template-columns: 1fr;
+  }
+}
+
+.ownerEmptyState {
+  grid-column: 1 / -1;
+  min-height: 240px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ownerPagination {
+  flex: 0 0 auto;
+}
+
 .leadTablePane {
   flex: 0 0 auto;
   display: flex;
@@ -2488,6 +2795,50 @@ body, .leadApp, .leadMain, .crmDashboardPage, .leadsSearchSection, .settingsPage
   gap: 8px;
 }
 
+.waResponseTimer {
+  min-width: 154px;
+  min-height: 38px;
+  border: 1px solid #e2e8f0;
+  border-radius: 7px;
+  padding: 6px 9px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f8fafc;
+  color: #64748b;
+}
+
+.waResponseTimer > div {
+  min-width: 0;
+  display: grid;
+  gap: 1px;
+}
+
+.waResponseTimer span {
+  font-size: 8px;
+  font-weight: 800;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.waResponseTimer strong {
+  font-size: 11px;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.waResponseTimer.waiting {
+  border-color: #fde68a;
+  background: #fffbeb;
+  color: #b45309;
+}
+
+.waResponseTimer.answered {
+  border-color: #a7f3d0;
+  background: #ecfdf5;
+  color: #047857;
+}
+
 .waChatMessages {
   flex: 1;
   min-height: 0;
@@ -2886,6 +3237,17 @@ body, .leadApp, .leadMain, .crmDashboardPage, .leadsSearchSection, .settingsPage
 
   .waChatHeaderActions {
     flex-shrink: 0;
+  }
+
+  .waResponseTimer {
+    min-width: 0;
+    width: 38px;
+    padding: 0;
+    justify-content: center;
+  }
+
+  .waResponseTimer > div {
+    display: none;
   }
 
   .waChatHeaderActions .ghostBtn {

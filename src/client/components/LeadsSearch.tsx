@@ -13,7 +13,12 @@ import {
   Linkedin,
   UserRound,
   ExternalLink,
-  Trash2
+  Trash2,
+  Building2,
+  MapPin,
+  BriefcaseBusiness,
+  MessageCircle,
+  ArrowUpRight
 } from "lucide-react";
 import type { Account, Offer, PipelineStage, ProspectOwner } from "../../shared/types";
 
@@ -249,7 +254,7 @@ export default function LeadsSearch({
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Cari bisnis, kota, produk..."
+            placeholder="Cari owner, marketing, PIC, brand..."
           />
         </div>
         
@@ -335,7 +340,134 @@ export default function LeadsSearch({
         </div>
       )}
 
-      {/* Table Pane */}
+      <div className="ownerCardContent">
+        <div className="ownerCardToolbar">
+          <label>
+            <input type="checkbox" checked={allSelected} onChange={toggleSelectAll} />
+            Pilih semua
+          </label>
+          <span>{filteredAccounts.length} orang ditemukan</span>
+        </div>
+
+        <section className={`ownerCardGrid ${compact ? "compact" : ""}`}>
+          {filteredAccounts.map((account) => {
+            const color = stageColors[account.stage] ?? stageColors["Belum Dihubungi"];
+            const contactName = account.ownerName || account.decisionMaker || "Owner belum ditemukan";
+            const role = account.decisionMaker && account.decisionMaker !== contactName
+              ? account.decisionMaker
+              : "Owner / Marketing / PIC";
+            const ownerWhatsapp = phoneUrl(account.ownerPhone);
+            const brandWhatsapp = phoneUrl(account.phone);
+            const initials = contactName === "Owner belum ditemukan"
+              ? "?"
+              : contactName.split(/\s+/).slice(0, 2).map((part) => part[0]).join("").toUpperCase();
+
+            return (
+              <article
+                key={account.id}
+                className={`ownerProspectCard ${selectedIds.has(account.id) ? "selected" : ""}`}
+                onClick={() => onOpenAccount(account)}
+                tabIndex={0}
+                role="button"
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") onOpenAccount(account);
+                }}
+              >
+                <div className="ownerCardTop">
+                  <input
+                    type="checkbox"
+                    checked={selectedIds.has(account.id)}
+                    onClick={(event) => event.stopPropagation()}
+                    onChange={() => toggleSelectOne(account.id)}
+                    aria-label={`Pilih ${contactName}`}
+                  />
+                  <span
+                    className="ownerStageBadge"
+                    style={{ backgroundColor: color.bg, color: color.text, borderColor: color.border }}
+                  >
+                    {account.stage}
+                  </span>
+                  <button
+                    className="ownerDeleteButton"
+                    type="button"
+                    title="Hapus prospek"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      onDeleteAccount(account.id);
+                    }}
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+
+                <div className="ownerIdentity">
+                  <div className={`ownerAvatar ${account.ownerName ? "" : "missing"}`}>{initials}</div>
+                  <div>
+                    <h3>{contactName}</h3>
+                    <p><BriefcaseBusiness size={13} /> {role}</p>
+                  </div>
+                </div>
+
+                <div className="ownerBrandBlock">
+                  <strong><Building2 size={14} /> {account.name}</strong>
+                  <span><MapPin size={13} /> {account.location || "Lokasi belum ada"}</span>
+                  <small>{account.industry || "Industri belum diklasifikasikan"}</small>
+                </div>
+
+                <div className="ownerProduct">
+                  <span>Produk</span>
+                  <strong>{account.offerMatch[0] || "Belum dipilih"}</strong>
+                </div>
+
+                <div className="ownerContactGroups" onClick={(event) => event.stopPropagation()}>
+                  <div className="ownerContactGroup">
+                    <span>Owner / PIC</span>
+                    <div className="ownerContactRow">
+                      <ChannelLink href={ownerWhatsapp} title="WhatsApp Owner"><MessageCircle size={15} /></ChannelLink>
+                      <ChannelLink href={instagramUrl(account.ownerInstagram)} title="Instagram Owner"><Instagram size={15} /></ChannelLink>
+                      <ChannelLink href={socialUrl(account.ownerLinkedin, "https://linkedin.com/in/")} title="LinkedIn Owner"><Linkedin size={15} /></ChannelLink>
+                      <ChannelLink href={socialUrl(account.ownerFacebook, "https://facebook.com/")} title="Facebook Owner"><Facebook size={15} /></ChannelLink>
+                      <ChannelLink href={account.ownerEmail ? `mailto:${account.ownerEmail}` : ""} title="Email Owner"><Mail size={15} /></ChannelLink>
+                    </div>
+                  </div>
+                  <div className="ownerContactGroup brandAudit">
+                    <span>Admin Brand · Audit</span>
+                    <div className="ownerContactRow">
+                      <ChannelLink href={brandWhatsapp} title="WhatsApp Admin Brand"><MessageCircle size={15} /></ChannelLink>
+                      <ChannelLink href={instagramUrl(account.instagram)} title="Instagram Brand"><Instagram size={15} /></ChannelLink>
+                      <ChannelLink href={account.email ? `mailto:${account.email}` : ""} title="Email Brand"><Mail size={15} /></ChannelLink>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="ownerCardFooter">
+                  <div>
+                    <span>Nilai deal</span>
+                    <strong>Rp {(account.dealValue ?? 0).toLocaleString("id-ID")}</strong>
+                  </div>
+                  <span className="ownerDetailLink">Lihat profil <ArrowUpRight size={14} /></span>
+                </div>
+              </article>
+            );
+          })}
+
+          {filteredAccounts.length === 0 && (
+            <div className="emptyState ownerEmptyState">
+              <UserRound size={28} />
+              <strong>Belum ada prospek orang</strong>
+              <span>Tambahkan Owner, Marketing, atau PIC untuk mulai prospecting.</span>
+            </div>
+          )}
+        </section>
+
+        <div className="paginationBar ownerPagination">
+          <span>Menampilkan {filteredAccounts.length} dari {accounts.length} prospek</span>
+          <span>{busy ? "Memperbarui..." : "Sinkronisasi Aktif"}</span>
+        </div>
+      </div>
+
+      {false && (
+      /* Legacy table retained temporarily for data-control compatibility */
       <div className="leadContent">
         <section className={`leadTablePane ${compact ? "compact" : ""}`}>
           <div className="tableHeader">
@@ -540,6 +672,7 @@ export default function LeadsSearch({
           </div>
         </section>
       </div>
+      )}
     </div>
   );
 }

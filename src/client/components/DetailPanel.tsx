@@ -224,19 +224,19 @@ export default function DetailPanel({
         <section className="waAgentCard">
           <div className="waAgentHeader">
             <div>
-              <span><Bot size={13} /> WA Agentic MVP</span>
-              <h3>Hubungi & Klasifikasikan</h3>
+              <span><Bot size={13} /> Audit WhatsApp</span>
+              <h3>Uji Respons Admin Brand</h3>
             </div>
             <em>{lastSignal}</em>
           </div>
 
           <label>
-            Nomor Tujuan
+            Nomor Admin Brand
             <input value={waTo} onChange={(event) => setWaTo(event.target.value)} placeholder="628..." />
           </label>
 
           <label>
-            Draft Pesan
+            Pesan Audit
             <textarea value={waDraft} onChange={(event) => setWaDraft(event.target.value)} />
           </label>
 
@@ -245,13 +245,13 @@ export default function DetailPanel({
               <RefreshCw size={13} /> Draft Ulang
             </button>
             <button className="primaryBtn" type="button" onClick={handleSendWhatsApp} disabled={waBusy || !waDraft.trim() || !waTo.trim()}>
-              <Send size={13} /> Kirim WA
+              <Send size={13} /> Mulai Audit
             </button>
           </div>
 
           <div className="waInboundSimulator">
             <label>
-              Simulasi Balasan Masuk
+              Catat Balasan Manual
               <textarea value={inboundText} onChange={(event) => setInboundText(event.target.value)} placeholder="Contoh: Boleh, harganya berapa ya?" />
             </label>
             <button className="ghostBtn" type="button" onClick={handleRecordInbound} disabled={waBusy || !inboundText.trim()}>

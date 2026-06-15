@@ -63,7 +63,7 @@ function validateWaNumber(phone: string): string | undefined {
 }
 
 export function preferredWaNumber(account: Account): string {
-  return normalizeWaNumber(account.ownerPhone || account.phone);
+  return normalizeWaNumber(account.phone || account.ownerPhone);
 }
 
 function defaultContactName(contact?: WhatsAppContact, account?: Account): string {
@@ -83,17 +83,13 @@ export function findAccountByPhone(phone: string): Account | undefined {
 }
 
 export function generateWaDraft(account: Account): string {
-  const decisionMaker = account.decisionMaker && account.decisionMaker !== "Belum diketahui"
-    ? account.decisionMaker
-    : "";
-  const firstName = account.ownerName?.split(" ")[0] || decisionMaker.split(" ")[0] || "Kak";
   const product = account.offerMatch[0] ?? "Website Company Profile";
   const context = account.website
     ? "Aku sempat cek presence online-nya"
     : "Aku lagi mapping beberapa bisnis yang potensial buat dirapikan presence online-nya";
 
   return [
-    `Halo ${firstName}, saya Daus.`,
+    `Halo Kak Admin ${account.name}, saya Daus.`,
     `${context} ${account.name}. Kayaknya ${account.industry} seperti ini bisa kebantu dengan ${product}, terutama biar calon client lebih gampang percaya dan langsung klik WhatsApp.`,
     "Boleh saya kirim audit singkat/ide perapihan websitenya? Santai, nanti kalau belum relevan juga gapapa."
   ].join(" ");
