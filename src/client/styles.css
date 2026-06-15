@@ -1042,29 +1042,35 @@ button {
 .ownerContactRow {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
   gap: 7px;
 }
 
 .ownerContactGroups {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 10px;
+  grid-template-columns: 1fr;
+  gap: 8px;
 }
 
 .ownerContactGroup {
   min-width: 0;
   border: 1px solid #e2e8f0;
   border-radius: 7px;
-  padding: 9px;
-  display: grid;
-  gap: 7px;
+  padding: 10px 11px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 
 .ownerContactGroup > span {
+  flex: 0 0 auto;
   color: #64748b;
   font-size: 9px;
   font-weight: 800;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .ownerContactGroup.brandAudit {
@@ -1077,8 +1083,9 @@ button {
 }
 
 .ownerContactRow .channelIcon {
-  width: 32px;
-  height: 32px;
+  width: 30px;
+  height: 30px;
+  flex-basis: 30px;
 }
 
 .ownerCardFooter {
@@ -1120,8 +1127,13 @@ button {
 }
 
 @media (max-width: 430px) {
-  .ownerContactGroups {
-    grid-template-columns: 1fr;
+  .ownerContactGroup {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .ownerContactRow {
+    justify-content: flex-start;
   }
 }
 
