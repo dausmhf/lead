@@ -2767,3 +2767,44 @@ select option {
     grid-template-columns: 1fr;
   }
 }
+
+/* Detail drawer final dark override */
+.leadApp .detailPanel,
+.leadApp .detailHeader,
+.leadApp .detailBody {
+  background: #111111 !important;
+  color: #f4f4f5 !important;
+  border-color: #2a2a2a !important;
+}
+
+.leadApp .leadQuickInfo {
+  background: #141414 !important;
+  border-color: #2a2a2a !important;
+  color: #d4d4d8 !important;
+}
+
+.leadApp .leadQuickInfo .infoLine span,
+.leadApp .detailBody label {
+  color: #a1a1aa !important;
+}
+
+.leadApp .leadQuickInfo .infoLine strong,
+.leadApp .detailHeader h2 {
+  color: #f4f4f5 !important;
+}
+
+.leadApp .detailBody input,
+.leadApp .detailBody select,
+.leadApp .detailBody textarea {
+  background: #111111 !important;
+  border-color: #2a2a2a !important;
+  color: #f4f4f5 !important;
+}
+
+.leadApp .detailBody input:focus,
+.leadApp .detailBody select:focus,
+.leadApp .detailBody textarea:focus {
+  background: #111111 !important;
+  border-color: #37f29b !important;
+  box-shadow: 0 0 0 3px rgba(55, 242, 155, 0.12) !important;
+}
